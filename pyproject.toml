@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cocotbext-fcov"
+version = "0.1.0"
+description = "Cocotb extension for functional coverage"
+authors = [
+    {name = "Minho Kim", email = "minho@furiosa.ai"},
+    {name = "Youngsik Kim", email = "kaengsik@furiosa.ai"},
+    {name = "Seokho Lee", email = "seokholee@furiosa.ai"}
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+]
+dependencies = [
+    "cocotb>=1.6.0",
+    "numpy",
+]
+
+[project.scripts]
+make_coverage = "cocotbext.fcov.make_coverage:main"
+
+[tool.black]
+line-length = 120
+preview = true
+include = '\.pyi?$'
+
