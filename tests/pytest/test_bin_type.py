@@ -10,6 +10,7 @@ from cocotbext.fcov import (
     BinBool,
     BinExp,
     BinMinMax,
+    BinMinMaxUniform,
     BinMinMaxExp,
     BinWindow,
     BinOneHot,
@@ -278,45 +279,51 @@ def test_bin_exp():
 
 
 def test_bin_min_max():
-    bin_min_max = BinMinMax(max=100, num=1)
-    assert bin_min_max.type == "MinMax"
-    assert bin_min_max.width == 7
-    assert bin_min_max.num == 1
-    assert bin_min_max.systemverilog() == "bins bin_100 = {100};"
-    assert bin_min_max.markdown() == "100"
+    min_max_class = {
+        "MinMax": BinMinMax,
+        "MinMaxUniform": BinMinMaxUniform,
+    }
+    for bin_type, bin_class in min_max_class.items():
+        bin_min_max = bin_class(max=100, num=1)
+        assert bin_min_max.type == bin_type
+        assert bin_min_max.width == 7
+        assert bin_min_max.num == 1
+        assert bin_min_max.systemverilog() == "bins bin_100 = {100};"
+        assert bin_min_max.markdown() == "100"
 
-    bin_min_max = BinMinMax(width=7, num=2)
-    assert bin_min_max.type == "MinMax"
-    assert bin_min_max.width == 7
-    assert bin_min_max.num == 2
-    assert bin_min_max.systemverilog() == "bins bin_0 = {0};\nbins bin_127 = {127};"
-    assert bin_min_max.markdown() == "0, 127"
+        bin_min_max = bin_class(width=7, num=2)
+        assert bin_min_max.type == bin_type
+        assert bin_min_max.width == 7
+        assert bin_min_max.num == 2
+        assert bin_min_max.systemverilog() == "bins bin_0 = {0};\nbins bin_127 = {127};"
+        assert bin_min_max.markdown() == "0, 127"
 
-    bin_min_max = BinMinMax(-100, 100, num=3, name="TEST")
-    assert bin_min_max.type == "MinMax"
-    assert bin_min_max.width == 8
-    assert bin_min_max.num == 3
-    assert bin_min_max.systemverilog() == "bins TEST_min = {-100};\nbins TEST = {[-99:99]};\nbins TEST_max = {100};"
-    assert bin_min_max.markdown() == "-100, [-99:99], 100"
+        bin_min_max = bin_class(-100, 100, num=3, name="TEST")
+        assert bin_min_max.type == bin_type
+        assert bin_min_max.width == 8
+        assert bin_min_max.num == 3
+        assert bin_min_max.systemverilog() == "bins TEST_min = {-100};\nbins TEST = {[-99:99]};\nbins TEST_max = {100};"
+        assert bin_min_max.markdown() == "-100, [-99:99], 100"
 
-    bin_min_max = BinMinMax(min=-100, width=8, num=5, prefix="TEST2")
-    assert bin_min_max.type == "MinMax"
-    assert bin_min_max.width == 8
-    assert bin_min_max.num == 5
-    assert (
-        bin_min_max.systemverilog()
-        == "bins TEST2_neg100 = {-100};\nbins TEST2_neg99_254[3] = {[-99:254]};\nbins TEST2_255 = {255};"
-    )
-    assert bin_min_max.markdown() == "-100, [-99:254]/3, 255"
+        bin_min_max = bin_class(min=-100, width=8, num=5, prefix="TEST2")
+        assert bin_min_max.type == bin_type
+        assert bin_min_max.width == 8
+        assert bin_min_max.num == 5
+        assert (
+            bin_min_max.systemverilog()
+            == "bins TEST2_neg100 = {-100};\nbins TEST2_neg99_254[3] = {[-99:254]};\nbins TEST2_255 = {255};"
+        )
+        assert bin_min_max.markdown() == "-100, [-99:254]/3, 255"
 
-    bin_min_max = BinMinMax(-321, 98, width=11, num=7, name="TEST3", prefix="TEST4")
-    assert bin_min_max.type == "MinMax"
-    assert bin_min_max.width == 11
-    assert bin_min_max.num == 7
-    assert (
-        bin_min_max.systemverilog() == "bins TEST3_min = {-321};\nbins TEST3[5] = {[-320:97]};\nbins TEST3_max = {98};"
-    )
-    assert bin_min_max.markdown() == "-321, [-320:97]/5, 98"
+        bin_min_max = bin_class(-321, 98, width=11, num=7, name="TEST3", prefix="TEST4")
+        assert bin_min_max.type == bin_type
+        assert bin_min_max.width == 11
+        assert bin_min_max.num == 7
+        assert (
+            bin_min_max.systemverilog()
+            == "bins TEST3_min = {-321};\nbins TEST3[5] = {[-320:97]};\nbins TEST3_max = {98};"
+        )
+        assert bin_min_max.markdown() == "-321, [-320:97]/5, 98"
 
 
 def test_bin_min_max_exp():

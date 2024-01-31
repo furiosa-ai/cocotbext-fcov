@@ -119,8 +119,7 @@ def test_class_new(width=4):
 
         cx_onehot_bitwise = Cross([cp_onehot, cp_bitwise])
 
-    cg_test1 = CoverGroupTest()
-    cg_test1.set_name("cg_test1")
+    cg_test1 = CoverGroupTest(name="cg_test1")
     cg_test2 = CoverGroupTest()
     cg_test2.set_name("cg_test2")
     assertion_check(cg_test1)
@@ -131,7 +130,7 @@ def test_class_new(width=4):
 
 def test_class_init(width=4):
     class CoverGroupTest(CoverGroup):
-        def __init__(self, width):
+        def __init__(self, width, name=None):
             self.cp_uniform = CoverPoint(BinUniform(-100, 100, 5, num=4))
             self.cp_width = CoverPoint(BinUniform(width=width))
             self.cp_onehot = CoverPoint(BinOneHot(width), ref=self.cp_width)
@@ -141,9 +140,10 @@ def test_class_init(width=4):
 
             self.cx_onehot_bitwise = Cross([self.cp_onehot, self.cp_bitwise])
 
-    cg_test1 = CoverGroupTest(width=width)
+            super().__init__(name=name)
+
+    cg_test1 = CoverGroupTest(width=width, name="cg_test1")
     cg_test2 = CoverGroupTest(width=width)
-    cg_test1.set_name("cg_test1")
     cg_test2.set_name("cg_test2")
     assertion_check(cg_test1)
     assertion_check(cg_test2)

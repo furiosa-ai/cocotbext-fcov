@@ -8,7 +8,6 @@ from itertools import chain
 
 import cocotb
 from cocotb.log import SimLog
-from cocotb.utils import get_sim_time
 from cocotb.triggers import Edge, Lock
 from cocotb.binary import BinaryValue
 
