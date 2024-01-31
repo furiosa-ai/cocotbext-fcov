@@ -149,8 +149,22 @@ def test_add():
         bin_dict["test_b"],
         ("test_c", bin_dict["test_c"], 5),
     ]
+
     bin_group = BinGroup([bin_list[0]]) + BinGroup([bin_list[1]])
     bin_group += BinGroup([bin_list[2]])
+    assert bin_group.type == "Custom"
+    assert bin_group.width == 5
+    assert bin_group.num == 7
+    assert str(bin_group) == "-11, [-10:9], (10, 12, 14, 16, 18)"
+    assert repr(bin_group) == "BinGroup(bins=(-11, [-10:9], (10, 12, 14, 16, 18)), width=None, prefix=bin, format=d)"
+    assert (
+        bin_group.systemverilog()
+        == "bins test_a = {-11};\nbins bin_neg10_9 = {[-10:9]};\nbins test_c[5] = {[10:18]} with (item % 2 == 0);"
+    )
+    assert bin_group.markdown() == "-11, [-10:9], {10, 12, 14, 16, 18}/5"
+
+    bin_group = [bin_list[0]] + BinGroup([bin_list[1]])
+    bin_group += [bin_list[2]]
     assert bin_group.type == "Custom"
     assert bin_group.width == 5
     assert bin_group.num == 7

@@ -261,6 +261,15 @@ class BinItem:
             )
         return self._as_bin_item(self.items + rhs.items)
 
+    def __radd__(self, value):
+        lhs = self._as_bin_item(value)
+        if self.next is not None:
+            raise (
+                TypeError,
+                "unsupported operand type(s) for +: 'BinItem(transition)' is not allowed at right-hand side",
+            )
+        return self._as_bin_item(lhs.items + self.items)
+
     def __iter__(self):
         return iter(self.items)
 

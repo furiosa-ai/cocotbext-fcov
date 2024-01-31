@@ -150,32 +150,35 @@ def test_eq():
 
 
 def test_add():
-    bin_items = [
-        BinItem([-11, 17, 16, 18, -16]),
-        BinItem(range(-10, 15)),
-        BinItem([30, 52, 43, 38]),
-        BinItem(range(-20, -15)),
-        BinItem(range(-10, 5)),
-        BinItem([8, 6, 9, 10, 16]),
+    items = [
+        [-11, 17, 16, 18, -16],
+        range(-10, 15),
+        [30, 52, 43, 38],
+        range(-20, -15),
+        range(-10, 5),
+        [8, 6, 9, 10, 16],
     ]
+    bin_items = [BinItem(i) for i in items]
 
     for i in range(len(bin_items) - 2):
-        bin_item = reduce(lambda a, b: a + b, bin_items[i : i + 3])
         value = reduce(lambda a, b: a + b, map(lambda x: x.items, bin_items[i : i + 3]))
         value_str = ", ".join(map(str, bin_items[i : i + 3]))
         value_max = max(map(lambda x: x.max, bin_items[i : i + 3]))
         value_min = min(map(lambda x: x.min, bin_items[i : i + 3]))
         value_width = max(map(lambda x: x.width, bin_items[i : i + 3]))
-        assert bin_item.items == value
-        assert bin_item.max == value_max
-        assert bin_item.min == value_min
-        assert bin_item.width == value_width
-        assert bin_item.num == 1
-        assert str(bin_item) == value_str
-        assert (
-            bin_item.systemverilog() == f"bins bin_{value_min}_{value_max} = ".replace("-", "neg") + f"{{{value_str}}}"
-        )
-        assert bin_item.markdown(shorten=False) == f"{{{value_str}}}"
+
+        for bin_add in [reduce(lambda a, b: a + b, bin_items[i : i + 3]), items[i] + bin_items[i + 1] + items[i + 2]]:
+            assert bin_add.items == value
+            assert bin_add.max == value_max
+            assert bin_add.min == value_min
+            assert bin_add.width == value_width
+            assert bin_add.num == 1
+            assert str(bin_add) == value_str
+            assert (
+                bin_add.systemverilog()
+                == f"bins bin_{value_min}_{value_max} = ".replace("-", "neg") + f"{{{value_str}}}"
+            )
+            assert bin_add.markdown(shorten=False) == f"{{{value_str}}}"
 
 
 def test_add_transition():

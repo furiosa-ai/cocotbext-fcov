@@ -95,8 +95,13 @@ class BinGroup:
         return hash(self._check_attrs())
 
     def __add__(self, value):
-        bins = dict(self.bins)
+        bins = self.bins
         bins.update(self._update_bins(value))
+        return BinGroup(bins, self._width, self.prefix, self.format)
+
+    def __radd__(self, value):
+        bins = self._update_bins(value)
+        bins.update(self.bins)
         return BinGroup(bins, self._width, self.prefix, self.format)
 
     def __iter__(self):
