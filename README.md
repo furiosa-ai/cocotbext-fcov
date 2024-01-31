@@ -7,7 +7,7 @@ Cocotb Extension for Functional Coverage Closure
 
 ```
 $ git clone https://github.com/furiosa-ai/cocotbext-fcov
-$ pip install cocotbext-fcov
+$ pip install ./cocotbext-fcov
 ```
 
 ## Documentation
@@ -25,7 +25,6 @@ The `CoverPoint` class defines specific ranges to be covered during verification
 CoverPoint([1, 5])
 # bins bin_1 = {1};
 # bins bin_5 = {5};
-
 ```
 
 #### range
@@ -69,7 +68,7 @@ Use like python `range()`
 ``` python
 CoverPoint(BinUniform(10))
 # bins bin_0_9[] = {[0:9]};
-CoverPoint(BinUniform(10, 20), num=5)
+CoverPoint(BinUniform(10, 20, num=5))
 # bins bin_10_19[5] = {[10:19]};
 ```
 
@@ -125,7 +124,7 @@ CoverPoint(BinMinMax(min=100, max=200, num=5))
 
 #### BinMinMaxExp
 ``` python
-CoverPoint(BinMinMaxExp(min=100, max=200, base=2, num=5))
+CoverPoint(BinMinMaxExp(min=100, max=200, base=2))
 # bins bin_100 = {100};
 # bins bin_101_127 = {[101:127]};
 # bins bin_128_199 = {[128:199]};
@@ -164,7 +163,7 @@ CoverPoint(BinBitwise(3), name="cp_bitwise", group="cg_predefined")
 
 #### BinTransition
 ``` python
-CoverPoint(BinTransition([1, 2, 3], (4, 5, 6), [[7, 8, 9], range(10, 20)]))
+CoverPoint(BinTransition((1, 2, 3), (4, 5, 6), ([7, 8, 9], range(10, 20))))
 # bins bin_1_3 = (1 => 2 => 3);
 # bins bin_4_6 = (4 => 5 => 6);
 # bins bin_7_19 = (7, 8, 9 => [10:19]);
@@ -200,6 +199,7 @@ cg_custom = CustomCoverGroup(name="cg_custom")
 #   }
 #   cx_bool_range: cross cp_bool, cp_range;
 ```
+
 ### CoverageModel
 
 A `CoverageModel` is a collection of specifications used to measure the coverage of a design during simulation, typically represented by a set of CoverGroups and coverted to a single module in SystemVerilog.

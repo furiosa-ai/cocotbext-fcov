@@ -7,12 +7,12 @@ name = "cocotbext-fcov"
 version = "0.1.0"
 description = "Cocotb Extension for Functional Coverage"
 authors = [
-    {name = "Minho Kim", email = "minho@furiosa.ai"},
     {name = "Youngsik Kim", email = "kaengsik@furiosa.ai"},
-    {name = "Seokho Lee", email = "seokholee@furiosa.ai"}
+    {name = "Seokho Lee", email = "seokholee@furiosa.ai"},
+    {name = "Minho Kim", email = "minho@furiosa.ai"},
 ]
 readme = "README.md"
-license = {file = "LICENSE.txt"}
+license = {file = "LICENSE"}
 classifiers = [
     "Framework :: cocotb",
     "License :: OSI Approved :: MIT License",

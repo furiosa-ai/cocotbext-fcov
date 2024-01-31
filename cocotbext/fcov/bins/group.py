@@ -56,7 +56,7 @@ class BinGroup:
             return dict()
         if isinstance(bins, BinGroup):
             return bins.bins
-        # special case: range
+        # special case: range, not recommanded
         if isinstance(bins, range) and bins.step == 1:
             bins = [(None, bins, 0)]
         if isinstance(bins, dict):

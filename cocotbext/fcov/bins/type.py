@@ -146,7 +146,7 @@ class BinMinMax(BinUniform):
         min: int | None = None,
         max: int | None = None,
         width: int | None = None,
-        num: int = 2,
+        num: int = 3,
         name: str | None = None,
         prefix: str = "bin",
         format: str = "d",
@@ -246,6 +246,7 @@ class BinDefault(BinGroup):
         super().__init__(bins=[None], width=width, prefix=prefix, format=format)
 
 
+# for design spec.
 class BinOutOfSpec(BinGroup):
     def __init__(self, prefix: str = "bin", format: str = "d"):
         super().__init__(prefix=prefix, format=format)

@@ -657,15 +657,13 @@ class CoverageModel:
 
 
 class CoverageCollector:
-    def __init__(self, dut, cov_model, testbench=None, log_level: str = "INFO") -> None:
+    def __init__(self, dut, cov_model, log_level: str = "INFO") -> None:
         """
         dut:            cocotb entity for dut
         cov_model:      instances of coverage model
-        testbench:      keep testbench's reference to use while collecting
         log_level:      log level in cocotb simulation log
         """
         self.dut = dut
-        self.testbench = testbench
 
         self.log = SimLog(f"cocotbext.fcov.{self.__class__.__name__}")
         self.log.setLevel(log_level)
