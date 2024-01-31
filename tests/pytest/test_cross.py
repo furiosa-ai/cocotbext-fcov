@@ -38,6 +38,19 @@ def test_cross():
         assert cx.sv_declare() == cx_sv
 
 
+def test_cross_list():
+    bin_uniforms = [CoverPoint(BinUniform(20, num=4), name=f"cp_uniform_{i}", group="cg_cross") for i in range(2)]
+    bin_onehots = [CoverPoint(BinOneHot(4), name=f"cp_onehot_{i}", group="cg_cross") for i in range(2)]
+    for cp in [bin_uniforms + bin_onehots, [bin_uniforms[0], bin_uniforms[1], *bin_onehots]]:
+        cx = Cross(cp, name="cx_uniform_onehot", group="cg_cross")
+        assert (
+            str(cx)
+            == "Cross(coverpoints=(cp_uniform_0, cp_uniform_1, cp_onehot_0, cp_onehot_1), name=cx_uniform_onehot,"
+            " group=cg_cross)"
+        )
+        assert cx.sv_declare() == "cx_uniform_onehot: cross cp_uniform_0, cp_uniform_1, cp_onehot_0, cp_onehot_1;"
+
+
 def test_eq():
     cp_uniform = CoverPoint(BinUniform(-100, 100, 5, num=4, name="UNIFORM"))
     cp_onehot = CoverPoint(BinOneHot(4, prefix="ONEHOT", format="b"))
