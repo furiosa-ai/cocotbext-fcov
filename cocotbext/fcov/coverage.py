@@ -61,6 +61,18 @@ class CoverPoint:
         format: str = "d",
         log_level: str = "INFO",
     ) -> None:
+        """
+        bins:           included bins list
+        ignore_bins:    ignored bins list
+        illegal_bins:   illegal bins list
+        width:          width of coverpoint
+        name:           name of coverpoint
+        group:          name of covergroup
+        ref:            refered coverpoint. if set, use ref's signal and don't create own signal
+        prefix:         name prefix of bins
+        format:         value format (str). {b, o, d, x, h}
+        log_level:      log level in cocotb simulation log
+        """
         self.log = SimLog(f"cocotbext.fcov.{self.__class__.__name__}")
         self.log.setLevel(log_level)
 
@@ -259,6 +271,11 @@ class Cross:
         name: str | None = None,
         group: str | None = None,
     ) -> None:
+        """
+        coverpoints:    coverpoints list to be crossed
+        name:           name of cross
+        group:          name of covergroup
+        """
         self.coverpoints = coverpoints
         self.name = name
         self.group = group
@@ -365,6 +382,10 @@ class CoverGroup:
         return obj
 
     def __init__(self, name: str | None = None, log_level: str = "INFO"):
+        """
+        name:           name of covergroup
+        log_level:      log level in cocotb simulation log
+        """
         self.set_name(name)
 
         self.log = SimLog(f"cocotbext.fcov.{self.__class__.__name__}")
@@ -549,6 +570,10 @@ class CoverGroup:
 
 class CoverageModel:
     def __init__(self, name: str | None = None, log_level: str = "INFO"):
+        """
+        name:           name of coverage model
+        log_level:      log level in cocotb simulation log
+        """
         self.set_name(name)
 
         self.log = SimLog(f"cocotbext.fcov.{self.__class__.__name__}")
@@ -633,12 +658,18 @@ class CoverageModel:
 
 
 class CoverageCollector:
-    def __init__(self, dut, cov_model, testbench=None, **kwargs) -> None:
+    def __init__(self, dut, cov_model, testbench=None, log_level: str = "INFO") -> None:
+        """
+        dut:            cocotb entity for dut
+        cov_model:      instances of coverage model
+        testbench:      keep testbench's reference to use while collecting
+        log_level:      log level in cocotb simulation log
+        """
         self.dut = dut
         self.testbench = testbench
 
         self.log = SimLog(f"cocotbext.fcov.{self.__class__.__name__}")
-        self.log.setLevel(kwargs.get("log_level", "INFO"))
+        self.log.setLevel(log_level)
 
         self.connect_coverage(dut, cov_model)
 

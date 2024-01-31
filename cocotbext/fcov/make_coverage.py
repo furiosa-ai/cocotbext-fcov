@@ -29,10 +29,18 @@ def get_coverage_models(cov_file):
 
 def main():
     parser = ArgumentParser()
-    parser.add_argument("--file", "-f", default="coverage.py", type=str)
-    parser.add_argument("--sv_output", "-sv", default="coverage.sv", type=str)
-    parser.add_argument("--md_output", "-md", default="coverage.md", type=str)
-    parser.add_argument("--overwrite", "-w", default=False, action="store_true")
+    parser.add_argument(
+        "--file", "-f", default="coverage.py", type=str, help="python files that include coverage model instances"
+    )
+    parser.add_argument(
+        "--sv_output", "-sv", default="coverage.sv", type=str, help="output file name for systemverilog code"
+    )
+    parser.add_argument(
+        "--md_output", "-md", default="coverage.md", type=str, help="output file name for markdown document"
+    )
+    parser.add_argument(
+        "--overwrite", "-w", default=False, action="store_true", help="force overwrite output files if they exist"
+    )
     args = parser.parse_args()
 
     filelist = args.file.split(",")
