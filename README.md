@@ -39,9 +39,6 @@ CoverPoint([range(10), range(10, 20)])
 CoverPoint([[1, 2], (3, 5, 7)])
 # bins bin_1_2 = {1, 2};
 # bins bin_3_7 = {3, 5, 7};
-CoverPoint([[1, 2], (3, 5, 7)])
-# bins bin_1_2 = {1, 2};
-# bins bin_3_7 = {3, 5, 7};
 ```
 
 #### transition
