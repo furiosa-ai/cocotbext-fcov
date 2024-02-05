@@ -11,7 +11,7 @@ class BinGroup:
         bins: Iterable | None = None,
         width: int | None = None,
         prefix: str = "bin",
-        format: str = "d",
+        format: str | None = None,
     ):
         self._width = width
         self.prefix = prefix
@@ -176,6 +176,9 @@ class BinGroup:
         self.update([bin])
 
     def systemverilog(self, format: str | None = None, keyword: str = "bins"):
+        if format is None:
+            format = self.format
+
         bin_sv_list = [
             v.systemverilog(format=format, keyword=keyword) + ";" for v in self.bins.values() if not v.is_default()
         ]
@@ -185,6 +188,9 @@ class BinGroup:
         return "\n".join(bin_sv_list)
 
     def markdown(self, format: str | None = None, shorten=True, enum=False):
+        if format is None:
+            format = self.format
+
         bin_md_list = [
             v.markdown(format=format, shorten=shorten, enum=enum) for v in self.bins.values() if not v.is_default()
         ]

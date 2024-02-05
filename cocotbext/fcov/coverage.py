@@ -57,7 +57,7 @@ class CoverPoint:
         group: str | None = None,
         ref: CoverPoint | None = None,
         prefix: str = "bin",
-        format: str = "d",
+        format: str | None = None,
         log_level: str = "INFO",
     ) -> None:
         """
@@ -239,15 +239,15 @@ class CoverPoint:
             return sv_coverpoints
         else:
             sv_coverpoint = f"{self.name}: coverpoint {self.signal}"
-            sv_bins = self.bins.systemverilog()
+            sv_bins = self.bins.systemverilog(format=self.format)
             if not self.ignore_bins.empty():
-                sv_bins += "\n" + self.ignore_bins.systemverilog(keyword="ignore_bins")
+                sv_bins += "\n" + self.ignore_bins.systemverilog(keyword="ignore_bins", format=self.format)
             if not self.illegal_bins.empty():
-                sv_bins += "\n" + self.illegal_bins.systemverilog(keyword="illegal_bins")
+                sv_bins += "\n" + self.illegal_bins.systemverilog(keyword="illegal_bins", format=self.format)
             sv_bins = " {\n" + sv_bins + "}" if sv_bins else ";"
             return sv_coverpoint + sv_bins
 
-    def markdown(self, name=None):
+    def markdown(self, name: str | None = None):
         if name is None:
             name = self.name
 
@@ -256,9 +256,9 @@ class CoverPoint:
             "Width": f"[{self.width - 1}:0]" if self.width else "",
             "Bin Type": self.bins.type,
             "# of Bins": self.bins.num,
-            "Bins": self.bins.markdown(),
-            "Ignore Bins": self.ignore_bins.markdown(),
-            "Illegal Bins": self.illegal_bins.markdown(),
+            "Bins": self.bins.markdown(format=self.format),
+            "Ignore Bins": self.ignore_bins.markdown(format=self.format),
+            "Illegal Bins": self.illegal_bins.markdown(format=self.format),
         }
 
 

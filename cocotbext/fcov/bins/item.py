@@ -21,13 +21,13 @@ class BinItem:
         name: str | None = None,
         num: int = 1,
         prefix: str = "bin",
-        format: str = "d",
+        format: str | None = "d",
     ):
         self._width = width
         self.name = name
         self._num = num
         self.prefix = prefix
-        self.format = format
+        self.format = "d" if format is None else format
 
         self.items = items
         self.next = next
@@ -311,8 +311,6 @@ class BinItem:
         return rhs
 
     def suggest_name(self, prefix: str | None = None, seperator="_", format: str | None = None):
-        if format is None:
-            format = self.format
         if prefix is None:
             prefix = self.prefix
 
@@ -324,7 +322,7 @@ class BinItem:
         range_list = sorted(list({self.min, self.max} - {None}))
 
         name = [prefix]
-        name += [i.replace("-", "neg") for i in map(self._format_int, range_list)]
+        name += [i.replace("-", "neg") for i in map(lambda x: self._format_int(x, format_int=format), range_list)]
         return seperator.join(name)
 
     def add(self, items):

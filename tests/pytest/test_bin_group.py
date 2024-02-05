@@ -7,7 +7,7 @@ def test_bin_empty():
     assert bin_group.type == "Custom"
     assert bin_group.width == None
     assert bin_group.num == 0
-    assert repr(bin_group) == "BinGroup(bins=(), width=None, prefix=bin, format=d)"
+    assert repr(bin_group) == "BinGroup(bins=(), width=None, prefix=bin, format=None)"
     assert str(bin_group) == ""
     assert bin_group.systemverilog() == ""
     assert bin_group.markdown() == ""
@@ -18,7 +18,7 @@ def test_bin_empty():
     assert bin_group.width == width
     assert bin_group.num == 0
     assert str(bin_group) == ""
-    assert repr(bin_group) == "BinGroup(bins=(), width=10, prefix=bin, format=d)"
+    assert repr(bin_group) == "BinGroup(bins=(), width=10, prefix=bin, format=None)"
     assert bin_group.systemverilog() == ""
     assert bin_group.markdown() == ""
 
@@ -31,7 +31,7 @@ def test_bin_single():
     assert bin_group.width == 5
     assert bin_group.num == 1
     assert str(bin_group) == value_str
-    assert repr(bin_group) == f"BinGroup(bins=({value_str}), width=None, prefix=bin, format=d)"
+    assert repr(bin_group) == f"BinGroup(bins=({value_str}), width=None, prefix=bin, format=None)"
     assert bin_group.systemverilog() == f"bins bin_neg10_9 = {{{value_str}}};"
     assert bin_group.markdown() == value_str
 
@@ -62,7 +62,7 @@ def test_bin_dict():
     assert bin_group.width == 5
     assert bin_group.num == 3
     assert str(bin_group) == "-11, [-10:9], (10, 12, 14, 16, 18)"
-    assert repr(bin_group) == "BinGroup(bins=(-11, [-10:9], (10, 12, 14, 16, 18)), width=None, prefix=bin, format=d)"
+    assert repr(bin_group) == "BinGroup(bins=(-11, [-10:9], (10, 12, 14, 16, 18)), width=None, prefix=bin, format=None)"
     assert (
         bin_group.systemverilog()
         == "bins test_a = {-11};\nbins test_b = {[-10:9]};\nbins test_c = {[10:19]} with (item % 2 == 0);"
@@ -81,7 +81,7 @@ def test_bin_list():
     assert bin_group.width == 5
     assert bin_group.num == 7
     assert str(bin_group) == "-11, [-10:9], (10, 12, 14, 16, 18)"
-    assert repr(bin_group) == "BinGroup(bins=(-11, [-10:9], (10, 12, 14, 16, 18)), width=None, prefix=bin, format=d)"
+    assert repr(bin_group) == "BinGroup(bins=(-11, [-10:9], (10, 12, 14, 16, 18)), width=None, prefix=bin, format=None)"
     assert (
         bin_group.systemverilog()
         == "bins test = {-11};\nbins bin_neg10_9 = {[-10:9]};\nbins bin_10_19[5] = {[10:19]} with (item % 2 == 0);"
@@ -102,7 +102,7 @@ def test_prefix():
     assert bin_group.width == 6
     assert bin_group.num == 5
     assert str(bin_group) == "-11, 5, -21, 10, 1"
-    assert repr(bin_group) == f"BinGroup(bins=(-11, 5, -21, 10, 1), width=None, prefix=test, format=d)"
+    assert repr(bin_group) == f"BinGroup(bins=(-11, 5, -21, 10, 1), width=None, prefix=test, format=None)"
     assert (
         bin_group.systemverilog()
         == "bins test_neg11 = {-11};\n"
@@ -156,7 +156,7 @@ def test_add():
     assert bin_group.width == 5
     assert bin_group.num == 7
     assert str(bin_group) == "-11, [-10:9], (10, 12, 14, 16, 18)"
-    assert repr(bin_group) == "BinGroup(bins=(-11, [-10:9], (10, 12, 14, 16, 18)), width=None, prefix=bin, format=d)"
+    assert repr(bin_group) == "BinGroup(bins=(-11, [-10:9], (10, 12, 14, 16, 18)), width=None, prefix=bin, format=None)"
     assert (
         bin_group.systemverilog()
         == "bins test_a = {-11};\nbins bin_neg10_9 = {[-10:9]};\nbins test_c[5] = {[10:19]} with (item % 2 == 0);"
@@ -169,7 +169,7 @@ def test_add():
     assert bin_group.width == 5
     assert bin_group.num == 7
     assert str(bin_group) == "-11, [-10:9], (10, 12, 14, 16, 18)"
-    assert repr(bin_group) == "BinGroup(bins=(-11, [-10:9], (10, 12, 14, 16, 18)), width=None, prefix=bin, format=d)"
+    assert repr(bin_group) == "BinGroup(bins=(-11, [-10:9], (10, 12, 14, 16, 18)), width=None, prefix=bin, format=None)"
     assert (
         bin_group.systemverilog()
         == "bins test_a = {-11};\nbins bin_neg10_9 = {[-10:9]};\nbins test_c[5] = {[10:19]} with (item % 2 == 0);"

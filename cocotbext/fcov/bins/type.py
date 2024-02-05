@@ -19,7 +19,7 @@ class BinSingle(BinGroup):
         width: int | None = None,
         name: str | None = None,
         prefix: str = "bin",
-        format: str = "d",
+        format: str | None = None,
     ):
         super().__init__(bins=[(name, value)], width=width, prefix=prefix, format=format)
 
@@ -32,7 +32,7 @@ class BinUniform(BinGroup):
         num: int = 0,
         name: str | None = None,
         prefix: str = "bin",
-        format: str = "d",
+        format: str | None = None,
     ):
         bins = self._get_bins(*args, width=width, num=num, name=name)
         super().__init__(bins=bins, width=width, prefix=prefix, format=format)
@@ -52,7 +52,7 @@ class BinRange(BinUniform):
         width: int | None = None,
         name: str | None = None,
         prefix: str = "bin",
-        format: str = "d",
+        format: str | None = None,
     ):
         super().__init__(*args, width=width, num=0, name=name, prefix=prefix, format=format)
 
@@ -63,7 +63,7 @@ class BinDict(BinGroup):
         bins: Dict,
         width: int | None = None,
         prefix: str = "bin",
-        format: str = "d",
+        format: str | None = None,
     ):
         super().__init__(bins=bins, width=width, prefix=prefix, format=format)
 
@@ -77,7 +77,7 @@ class BinEnum(BinDict):
         enums: Iterable[Enum],
         width: int | None = None,
         prefix: str | None = None,
-        format: str = "d",
+        format: str | None = None,
     ):
         try:
             if issubclass(enums, Enum):
@@ -93,7 +93,7 @@ class BinEnum(BinDict):
 
 
 class BinBool(BinEnum):
-    def __init__(self, prefix: str | None = None, format: str = "d"):
+    def __init__(self, prefix: str | None = None, format: str | None = None):
         class BoolType(IntEnum):
             FALSE = False
             TRUE = True
@@ -108,7 +108,7 @@ class BinExp(BinGroup):
         width: int | None = None,
         base: int = 2,
         prefix: str = "bin",
-        format: str = "d",
+        format: str | None = None,
     ):
         bins = self._get_bins(*args, base=base, width=width)
         super().__init__(bins=bins, width=width, prefix=prefix, format=format)
@@ -149,7 +149,7 @@ class BinMinMax(BinUniform):
         num: int = 3,
         name: str | None = None,
         prefix: str = "bin",
-        format: str = "d",
+        format: str | None = None,
     ):
         bins = self._get_bins(min, max, width, num, name)
         BinGroup.__init__(self, bins=bins, width=width, prefix=prefix, format=format)
@@ -194,7 +194,7 @@ class BinMinMaxExp(BinExp, BinMinMax):
         width: int | None = None,
         base: int = 2,
         prefix: str = "bin",
-        format: str = "d",
+        format: str | None = None,
     ):
         bins = self._get_bins(min, max, width, base)
         BinGroup.__init__(self, bins=bins, width=width, prefix=prefix, format=format)
@@ -216,7 +216,7 @@ class BinWindow(BinGroup):
         width: int | None = None,
         shift: int | None = None,
         prefix: str = "bin",
-        format: str = "x",
+        format: str | None = "x",
     ):
         bins = self._get_bins(window, width, shift)
         super().__init__(bins=bins, width=width, prefix=prefix, format=format)
@@ -237,18 +237,18 @@ class BinWindow(BinGroup):
 
 
 class BinOneHot(BinWindow):
-    def __init__(self, width: int | None = None, prefix: str = "bin", format: str = "x"):
+    def __init__(self, width: int | None = None, prefix: str = "bin", format: str | None = "x"):
         super().__init__(width=width, prefix=prefix, format=format)
 
 
 class BinDefault(BinGroup):
-    def __init__(self, width: int | None = None, prefix: str = "bin", format: str = "d"):
+    def __init__(self, width: int | None = None, prefix: str = "bin", format: str | None = None):
         super().__init__(bins=[None], width=width, prefix=prefix, format=format)
 
 
 # for design spec.
 class BinOutOfSpec(BinGroup):
-    def __init__(self, prefix: str = "bin", format: str = "d"):
+    def __init__(self, prefix: str = "bin", format: str | None = None):
         super().__init__(prefix=prefix, format=format)
 
     @property
@@ -263,7 +263,7 @@ class BinOutOfSpec(BinGroup):
 
 
 class BinBitwise(BinGroup):
-    def __init__(self, width: int | None = None, prefix: str = "bin", format: str = "d"):
+    def __init__(self, width: int | None = None, prefix: str = "bin", format: str | None = None):
         assert width is not None, "Error!! width should be specified in BinBitwise"
         super().__init__(width=width, prefix=prefix, format=format)
 
@@ -280,7 +280,7 @@ class BinTransition(BinGroup):
         *trans_bins,
         width: int | None = None,
         prefix: str = "bin",
-        format: str = "d",
+        format: str | None = None,
     ):
         bins = self._get_bins(*trans_bins)
         super().__init__(bins, width, prefix, format)
