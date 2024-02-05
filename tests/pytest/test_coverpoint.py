@@ -78,10 +78,10 @@ def test_cp_dict_list():
         == "cp_dict: coverpoint cg_python_cp_dict {\n"
         "bins test_a = {-11};\n"
         "bins test_b = {[-10:9]};\n"
-        "bins test_c = {[10:18]} with (item % 2 == 0);\n"
+        "bins test_c = {[10:19]} with (item % 2 == 0);\n"
         "ignore_bins ignore_a = {-10};\n"
-        "ignore_bins bin_0_8 = {[0:8]} with (item % 2 == 0);\n"
-        "ignore_bins ignore_b[2] = {[10:15]} with (item % 5 == 0);}"
+        "ignore_bins bin_0_9 = {[0:9]} with (item % 2 == 0);\n"
+        "ignore_bins ignore_b[2] = {[10:19]} with (item % 5 == 0);}"
     )
     assert cp.markdown() == {
         "Coverpoint": "cp_dict",
@@ -129,8 +129,8 @@ def test_cp_uniform_range_single():
     assert (
         cp.sv_declare()
         == "cp_uniform: coverpoint cg_predefined_cp_uniform {\n"
-        "bins UNIFORM[4] = {[-100:95]} with (item % 5 == 0);\n"
-        "ignore_bins RANGE[] = {[-121:89]} with (item % 10 == 9);\n"
+        "bins UNIFORM[4] = {[-100:99]} with (item % 5 == 0);\n"
+        "ignore_bins RANGE[] = {[-121:97]} with (item % 10 == 9);\n"
         "illegal_bins SINGLE = {[-10:9]};}"
     )
     assert cp.markdown() == {

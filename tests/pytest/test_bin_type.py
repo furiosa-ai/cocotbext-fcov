@@ -63,14 +63,14 @@ def test_bin_uniform():
     assert bin_uniform.type == "Uniform"
     assert bin_uniform.width == 8
     assert bin_uniform.num == 4
-    assert bin_uniform.systemverilog() == "bins TEST2[4] = {[-100:95]} with (item % 5 == 0);"
+    assert bin_uniform.systemverilog() == "bins TEST2[4] = {[-100:99]} with (item % 5 == 0);"
     assert bin_uniform.markdown() == "{-100, -95, -90, ..., 90, 95}/4"
 
     bin_uniform = BinUniform(-321, 98, 4, num=5, name="TEST3")
     assert bin_uniform.type == "Uniform"
     assert bin_uniform.width == 10
     assert bin_uniform.num == 5
-    assert bin_uniform.systemverilog() == "bins TEST3[5] = {[-321:95]} with (item % 4 == 3);"
+    assert bin_uniform.systemverilog() == "bins TEST3[5] = {[-321:97]} with (item % 4 == 3);"
     assert bin_uniform.markdown() == "{-321, -317, -313, ..., 91, 95}/5"
 
 
@@ -93,14 +93,14 @@ def test_bin_range():
     assert bin_range.type == "Range"
     assert bin_range.width == 8
     assert bin_range.num == 40
-    assert bin_range.systemverilog() == "bins TEST2[] = {[-100:95]} with (item % 5 == 0);"
+    assert bin_range.systemverilog() == "bins TEST2[] = {[-100:99]} with (item % 5 == 0);"
     assert bin_range.markdown() == "{-100, -95, -90, ..., 90, 95}/40"
 
     bin_range = BinRange(-321, 98, 4, name="TEST3")
     assert bin_range.type == "Range"
     assert bin_range.width == 10
     assert bin_range.num == 105
-    assert bin_range.systemverilog() == "bins TEST3[] = {[-321:95]} with (item % 4 == 3);"
+    assert bin_range.systemverilog() == "bins TEST3[] = {[-321:97]} with (item % 4 == 3);"
     assert bin_range.markdown() == "{-321, -317, -313, ..., 91, 95}/105"
 
 
@@ -212,14 +212,14 @@ def test_bin_exp():
     assert (
         bin_exp.systemverilog()
         == "bins TEST2_neg100_neg65 = {[-100:-65]} with (item % 5 == 0);\n"
-        "bins TEST2_neg64_neg19 = {[-64:-19]} with (item % 5 == 1);\n"
-        "bins TEST2_neg16_neg6 = {[-16:-6]} with (item % 5 == 4);\n"
+        "bins TEST2_neg64_neg17 = {[-64:-17]} with (item % 5 == 1);\n"
+        "bins TEST2_neg16_neg5 = {[-16:-5]} with (item % 5 == 4);\n"
         "bins TEST2_neg4 = {-4};\n"
         "bins TEST2_neg1 = {-1};\n"
         "bins TEST2_0 = {0};\n"
         "bins TEST2_1 = {1};\n"
-        "bins TEST2_4_14 = {[4:14]} with (item % 5 == 4);\n"
-        "bins TEST2_16_61 = {[16:61]} with (item % 5 == 1);\n"
+        "bins TEST2_4_15 = {[4:15]} with (item % 5 == 4);\n"
+        "bins TEST2_16_63 = {[16:63]} with (item % 5 == 1);\n"
         "bins TEST2_64_99 = {[64:99]} with (item % 5 == 4);"
     )
     assert (
@@ -239,14 +239,14 @@ def test_bin_exp():
     assert bin_exp.num == 9
     assert (
         bin_exp.systemverilog()
-        == "bins TEST3_neg321_neg129 = {[-321:-129]} with (item % 4 == 3);\n"
-        "bins TEST3_neg125_neg29 = {[-125:-29]} with (item % 4 == 3);\n"
-        "bins TEST3_neg25_neg9 = {[-25:-9]} with (item % 4 == 3);\n"
+        == "bins TEST3_neg321_neg126 = {[-321:-126]} with (item % 4 == 3);\n"
+        "bins TEST3_neg125_neg26 = {[-125:-26]} with (item % 4 == 3);\n"
+        "bins TEST3_neg25_neg6 = {[-25:-6]} with (item % 4 == 3);\n"
         "bins TEST3_neg5 = {-5};\n"
         "bins TEST3_neg1 = {-1};\n"
         "bins TEST3_0 = {0};\n"
         "bins TEST3_1 = {1};\n"
-        "bins TEST3_5_21 = {[5:21]} with (item % 4 == 1);\n"
+        "bins TEST3_5_24 = {[5:24]} with (item % 4 == 1);\n"
         "bins TEST3_25_97 = {[25:97]} with (item % 4 == 1);"
     )
     assert (

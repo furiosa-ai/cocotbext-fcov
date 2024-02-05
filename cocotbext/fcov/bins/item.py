@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from functools import cached_property
 from enum import Enum, IntEnum
 
 
@@ -128,7 +129,7 @@ class BinItem:
             self._is_transition_bin() or self._is_range_bin()
         ), f"Error!! All bin items ({self._items}) should be same! (value only or transition only)"
 
-    @property
+    @cached_property
     def max(self):
         if not self.items:
             return None
@@ -139,14 +140,16 @@ class BinItem:
             elif isinstance(item, BinItem):
                 return item.max
             elif isinstance(item, range):
-                return max(item)
+                return item.stop - 1
             else:
                 return item
 
-        max_value = max(max_item_single(i) for i in self.items)
-        return max_value if self.next is None else max(max_value, self.next.max)
+        values = [max_item_single(i) for i in self.items]
+        if self.next is not None:
+            values.append(self.next.max)
+        return max(values)
 
-    @property
+    @cached_property
     def min(self):
         if not self.items:
             return None
@@ -157,12 +160,14 @@ class BinItem:
             elif isinstance(item, BinItem):
                 return item.min
             elif isinstance(item, range):
-                return min(item)
+                return item.start
             else:
                 return item
 
-        min_value = min(min_item_single(i) for i in self.items)
-        return min_value if self.next is None else min(min_value, self.next.min)
+        values = [min_item_single(i) for i in self.items]
+        if self.next is not None:
+            values.append(self.next.min)
+        return min(values)
 
     @property
     def width(self):
@@ -376,7 +381,7 @@ class BinItem:
             return self._format_int(item, lang, format)
         elif isinstance(item, range):
             assert self._is_type_range(item) or lang == LanguageType.SystemVerilog
-            return f"[{self._format_int(min(item), lang, format)}:{self._format_int(max(item), lang, format)}]"
+            return f"[{self._format_int(item.start, lang, format)}:{self._format_int(item.stop-1, lang, format)}]"
         elif self._is_type_transition(item):
             return f"({item.as_string(lang, format)})"
         else:

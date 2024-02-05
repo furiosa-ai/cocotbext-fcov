@@ -44,7 +44,7 @@ def assertion_check(inst: CoverGroup):
         f"cp_single_list_4: coverpoint {name}_cp_single_list_4 {{\n"
         "bins bin_40 = {40};}\n"
         f"cp_uniform: coverpoint {name}_cp_uniform {{\n"
-        "bins bin_neg100_95[4] = {[-100:95]} with (item % 5 == 0);}\n"
+        "bins bin_neg100_99[4] = {[-100:99]} with (item % 5 == 0);}\n"
         f"cp_uniform_list_0: coverpoint {name}_cp_uniform_list_0 {{\n"
         "bins bin_0_9[] = {[0:9]};}\n"
         f"cp_uniform_list_1: coverpoint {name}_cp_uniform_list_1 {{\n"

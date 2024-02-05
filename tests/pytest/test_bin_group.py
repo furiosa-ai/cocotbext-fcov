@@ -65,7 +65,7 @@ def test_bin_dict():
     assert repr(bin_group) == "BinGroup(bins=(-11, [-10:9], (10, 12, 14, 16, 18)), width=None, prefix=bin, format=d)"
     assert (
         bin_group.systemverilog()
-        == "bins test_a = {-11};\nbins test_b = {[-10:9]};\nbins test_c = {[10:18]} with (item % 2 == 0);"
+        == "bins test_a = {-11};\nbins test_b = {[-10:9]};\nbins test_c = {[10:19]} with (item % 2 == 0);"
     )
     assert bin_group.markdown() == "-11, [-10:9], {10, 12, 14, 16, 18}"
 
@@ -84,7 +84,7 @@ def test_bin_list():
     assert repr(bin_group) == "BinGroup(bins=(-11, [-10:9], (10, 12, 14, 16, 18)), width=None, prefix=bin, format=d)"
     assert (
         bin_group.systemverilog()
-        == "bins test = {-11};\nbins bin_neg10_9 = {[-10:9]};\nbins bin_10_18[5] = {[10:18]} with (item % 2 == 0);"
+        == "bins test = {-11};\nbins bin_neg10_9 = {[-10:9]};\nbins bin_10_19[5] = {[10:19]} with (item % 2 == 0);"
     )
     assert bin_group.markdown() == "-11, [-10:9], {10, 12, 14, 16, 18}/5"
 
@@ -159,7 +159,7 @@ def test_add():
     assert repr(bin_group) == "BinGroup(bins=(-11, [-10:9], (10, 12, 14, 16, 18)), width=None, prefix=bin, format=d)"
     assert (
         bin_group.systemverilog()
-        == "bins test_a = {-11};\nbins bin_neg10_9 = {[-10:9]};\nbins test_c[5] = {[10:18]} with (item % 2 == 0);"
+        == "bins test_a = {-11};\nbins bin_neg10_9 = {[-10:9]};\nbins test_c[5] = {[10:19]} with (item % 2 == 0);"
     )
     assert bin_group.markdown() == "-11, [-10:9], {10, 12, 14, 16, 18}/5"
 
@@ -172,6 +172,6 @@ def test_add():
     assert repr(bin_group) == "BinGroup(bins=(-11, [-10:9], (10, 12, 14, 16, 18)), width=None, prefix=bin, format=d)"
     assert (
         bin_group.systemverilog()
-        == "bins test_a = {-11};\nbins bin_neg10_9 = {[-10:9]};\nbins test_c[5] = {[10:18]} with (item % 2 == 0);"
+        == "bins test_a = {-11};\nbins bin_neg10_9 = {[-10:9]};\nbins test_c[5] = {[10:19]} with (item % 2 == 0);"
     )
     assert bin_group.markdown() == "-11, [-10:9], {10, 12, 14, 16, 18}/5"
