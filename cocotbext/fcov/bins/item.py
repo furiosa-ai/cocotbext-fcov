@@ -360,11 +360,13 @@ class BinItem:
 
         abs_value = format(abs(value), format_int)
         sign_prefix = "-" if value < 0 else ""
-        if format_int == "d":
-            format_prefix = ""
-        elif lang == LanguageType.SystemVerilog:
-            format_prefix = ("'" + format_int).replace("x", "h")
-        else:
+        format_prefix = ""
+        if lang == LanguageType.SystemVerilog:
+            if self.width > 32:
+                format_prefix = (str(self.width) + "'" + format_int).replace("x", "h")
+            elif format_int != "d":
+                format_prefix = ("'" + format_int).replace("x", "h")
+        elif format_int != "d":
             format_prefix = "0" + format_int
 
         return sign_prefix + format_prefix + abs_value
