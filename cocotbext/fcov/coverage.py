@@ -466,7 +466,7 @@ class CoverGroup:
             if isinstance(cp, Iterable):
                 assert isinstance(v, Iterable), f"Value ({v}) should be Iterable for CoverPoint {k}"
                 assert len(cp) == len(v), f"Length of values ({len(v)}) is not same to CoverPoint {k} ({len(cp)})"
-                for cpi, vi in zip(cp, v):
+                for (_, cpi), vi in zip(cp, v):
                     cpi.value = vi
             else:
                 assert not isinstance(v, Iterable)
@@ -476,7 +476,7 @@ class CoverGroup:
         values = dict()
         for k, v, _ in self._traverse_coverpoint(flatten=False):
             if isinstance(v, Iterable):
-                values[k] = [i.value for i in v]
+                values[k] = [i.value for _, i in v]
             else:
                 values[k] = v.value
         return values
@@ -568,6 +568,22 @@ class CoverGroup:
 
 
 class CoverageModel:
+    def __new__(cls, *args, **kwargs):
+        obj = super().__new__(cls)
+
+        for k in dir(cls):
+            v = getattr(cls, k)
+            if isinstance(v, CoverGroup):
+                new_cp = deepcopy(v)
+                setattr(obj, k, new_cp)
+            elif isinstance(v, Iterable):
+                iterable = [e for e in v if isinstance(e, CoverGroup)]
+                if iterable:
+                    new_iterable = type(v)(deepcopy(iterable))
+                    setattr(obj, k, new_iterable)
+
+        return obj
+
     def __init__(self, name: str | None = None, log_level: str = "INFO"):
         """
         name:           name of coverage model
