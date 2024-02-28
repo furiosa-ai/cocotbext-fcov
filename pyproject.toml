@@ -22,6 +22,7 @@ classifiers = [
 dependencies = [
     "cocotb>=1.6.0",
     "numpy",
+    "pandas",
 ]
 
 [project.scripts]
