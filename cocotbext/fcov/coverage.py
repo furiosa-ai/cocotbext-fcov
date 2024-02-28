@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import pandas as pd
-from copy import deepcopy
+from copy import deepcopy, copy
 from math import prod
 from typing import Any, Dict, Iterable
 from itertools import chain
@@ -233,7 +233,8 @@ class CoverPoint:
             assert self.illegal_bins.empty(), "No illegal bin is allowed for Bitwise Bins"
             assert self.bins.width, "Valid width value is needed"
 
-            sv_coverpoints = f"{self.name}_0: coverpoint {self.signal}[0];"
+            sv_coverpoints = f"{self.name}_0: coverpoint {self.signal}"
+            sv_coverpoints += "[0];" if self.bins.width > 1 else ";"
             for i in range(1, self.bins.width):
                 sv_coverpoints += f"\n{self.name}_{i}: coverpoint {self.signal}[{i}];"
             return sv_coverpoints
@@ -335,49 +336,7 @@ class Cross:
 class CoverGroup:
     def __new__(cls, *args, **kwargs):
         obj = super().__new__(cls)
-
-        # using deepcopy, make new instances of static members in class not to share the members
-        attr_map = dict()
-        for k in dir(cls):
-            v = getattr(cls, k)
-            if isinstance(v, CoverPoint):
-                new_cp = deepcopy(v)
-                setattr(obj, k, new_cp)
-                attr_map[id(v)] = new_cp
-            elif isinstance(v, Iterable):
-                iterable = [e for e in v if isinstance(e, CoverPoint)]
-                if iterable:
-                    new_iterable = type(v)(deepcopy(iterable))
-                    setattr(obj, k, new_iterable)
-                    for cp, new_cp in zip(iterable, new_iterable):
-                        attr_map[id(cp)] = new_cp
-
-        def update_ref(cp: CoverPoint):
-            if cp.ref:
-                cp.ref = attr_map[id(cp.ref)]
-
-        for k, v in vars(obj).items():
-            if isinstance(v, CoverPoint):
-                update_ref(v)
-            elif isinstance(v, Iterable):
-                for elem in v:
-                    if isinstance(elem, CoverPoint):
-                        update_ref(cp)
-
-        def new_cross(cross: Cross):
-            coverpoints = [attr_map[id(cp)] for cp in cross.coverpoints]
-            return Cross(coverpoints, cross.name, cross.group)
-
-        for k in dir(cls):
-            v = getattr(cls, k)
-            if isinstance(v, Cross):
-                setattr(obj, k, new_cross(v))
-            elif isinstance(v, Iterable):
-                iterable = [e for e in v if isinstance(e, Cross)]
-                if iterable:
-                    new_iterable = type(v)(map(new_cross, iterable))
-                    setattr(obj, k, new_iterable)
-
+        obj._copy_coverpoints()
         return obj
 
     def __init__(self, name: str | None = None, log_level: str = "INFO"):
@@ -393,10 +352,42 @@ class CoverGroup:
         self._sample_handler = None
         self._lock = Lock()
 
+    def _copy_coverpoints(self):
+        cp_map = dict()
+        for k, v, _ in self._traverse_coverpoint(flatten=False):
+            if isinstance(v, Iterable):
+                new_iterable = type(v)(copy(cp) for _, cp in v)
+                setattr(self, k, new_iterable)
+                for cp, new_cp in zip(v, new_iterable):
+                    cp_map[id(cp)] = new_cp
+            else:
+                new_cp = copy(v)
+                setattr(self, k, new_cp)
+                cp_map[id(v)] = new_cp
+
+        for _, v, _ in self._traverse_coverpoint():
+            if v.ref:
+                v.ref = cp_map[id(v.ref)]
+
+        for k, v, i in self._traverse_cross():
+            coverpoints = [cp_map[id(cp)] for cp in v.coverpoints]
+            new_cross = copy(v)
+            new_cross.coverpoints = coverpoints
+            if i is None:
+                setattr(self, k, new_cross)
+            else:
+                getattr(self, k)[i] = new_cross
+
+    def __deepcopy__(self, memo):
+        obj = copy(self)
+        obj._copy_coverpoints()
+        return obj
+
     def __str__(self):
         res = f"CoverGroup(name={self.name}"
-        for _, i, _ in chain(self._traverse_coverpoint(), self._traverse_cross()):
-            res += f", {i.name}={str(i)}"
+        for _, v, _ in chain(self._traverse_coverpoint(), self._traverse_cross()):
+            res += f", {v.name}={str(v)}"
+        res += ")"
         return res
 
     def _check_attrs(self):
@@ -436,12 +427,15 @@ class CoverGroup:
                         yield var, elem, i
 
     def set_name(self, name: str | None, seperator: str = "_"):
-        if name is None:
-            return
         self.name = name
+        if self.name is None:
+            return
 
         for var, obj, i in chain(self._traverse_coverpoint(), self._traverse_cross()):
-            obj_name = var if i is None else var + seperator + str(i)
+            if obj.name is None:
+                obj_name = var if i is None else var + seperator + str(i)
+            else:
+                obj_name = obj.name
             obj.set_name(obj_name, self.name)
 
     def connect(self, coverage_instance):
@@ -500,11 +494,13 @@ class CoverGroup:
 
     @property
     def sample_name(self):
-        return str(self.name) + "_sample"
+        if hasattr(self, "name"):
+            return str(self.name) + "_sample"
 
     @property
     def instance_name(self):
-        return str(self.name) + "_inst"
+        if hasattr(self, "name"):
+            return str(self.name) + "_inst"
 
     # methods for generating systemverilog
     def sv_wire(self):
@@ -570,18 +566,7 @@ class CoverGroup:
 class CoverageModel:
     def __new__(cls, *args, **kwargs):
         obj = super().__new__(cls)
-
-        for k in dir(cls):
-            v = getattr(cls, k)
-            if isinstance(v, CoverGroup):
-                new_cp = deepcopy(v)
-                setattr(obj, k, new_cp)
-            elif isinstance(v, Iterable):
-                iterable = [e for e in v if isinstance(e, CoverGroup)]
-                if iterable:
-                    new_iterable = type(v)(deepcopy(iterable))
-                    setattr(obj, k, new_iterable)
-
+        obj._copy_covergroups()
         return obj
 
     def __init__(self, name: str | None = None, log_level: str = "INFO"):
@@ -594,10 +579,29 @@ class CoverageModel:
         self.log = SimLog(f"cocotbext.fcov.{self.__class__.__name__}")
         self.log.setLevel(log_level)
 
+    def _copy_covergroups(self):
+        cg_map = dict()
+        for k, v, _ in self._traverse_covergroup(flatten=False):
+            if isinstance(v, Iterable):
+                new_iterable = type(v)(deepcopy(cg) for _, cg in v)
+                setattr(self, k, new_iterable)
+                for cg, new_cg in zip(v, new_iterable):
+                    cg_map[id(cg)] = new_cg
+            else:
+                new_cg = deepcopy(v)
+                setattr(self, k, new_cg)
+                cg_map[id(v)] = new_cg
+
+    def __deepcopy__(self, memo):
+        obj = copy(self)
+        obj._copy_covergroups()
+        return obj
+
     def __str__(self):
         res = f"CoverageModel(name={self.name}"
-        for _, i, _ in self._traverse_covergroup():
-            res += f", {i.name}={str(i)}"
+        for _, v, _ in self._traverse_covergroup():
+            res += f", {v.name}={str(v)}"
+        res += ")"
         return res
 
     def _check_attrs(self):
@@ -627,8 +631,7 @@ class CoverageModel:
                         yield var, cg_list, None
 
     def set_name(self, name=None, seperator="_"):
-        if name is not None:
-            self.name = name
+        self.name = name
 
         for var, obj, i in self._traverse_covergroup():
             obj_name = var if i is None else var + seperator + str(i)

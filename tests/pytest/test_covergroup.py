@@ -77,7 +77,7 @@ def assertion_check(inst: CoverGroup):
         f"cp_uniform_list_1=CoverPoint(bins=([0:9]), ignore_bins=(), illegal_bins=(), width=None, name=cp_uniform_list_1, group={name}, ref=None), "
         f"cp_uniform_list_2=CoverPoint(bins=([0:9]), ignore_bins=(), illegal_bins=(), width=None, name=cp_uniform_list_2, group={name}, ref=None), "
         f"cp_width=CoverPoint(bins=([0:15]), ignore_bins=(), illegal_bins=(), width=None, name=cp_width, group={name}, ref=None), "
-        f"cx_onehot_bitwise=Cross(coverpoints=(cp_onehot, cp_bitwise), name=cx_onehot_bitwise, group={name})"
+        f"cx_onehot_bitwise=Cross(coverpoints=(cp_onehot, cp_bitwise), name=cx_onehot_bitwise, group={name}))"
         # fmt: on
     )
     assert inst.sv_wire() == wire

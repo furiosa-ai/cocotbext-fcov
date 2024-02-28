@@ -46,9 +46,6 @@ class BinItem:
     def __deepcopy__(self, memo):
         return self.__copy__()
 
-    def copy(self):
-        return self.__copy__()
-
     def _is_type_int(self, item):
         return isinstance(item, int)
 
@@ -72,7 +69,7 @@ class BinItem:
 
     def _as_bin_item(self, value) -> BinItem:
         if isinstance(value, BinItem):
-            return value.copy()
+            return value.__copy__()
         else:
             return BinItem(
                 items=value,
@@ -295,7 +292,7 @@ class BinItem:
 
     # Transition operators: >>, <<
     def __rshift__(self, value):
-        res = self.copy()
+        res = self.__copy__()
         res_next = res
         while res_next._next is not None:
             res_next = res_next._next

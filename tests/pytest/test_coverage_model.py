@@ -21,6 +21,8 @@ def test_coverage_model():
 
     class CoverGroupTest2(CoverGroup):
         def __init__(self, width):
+            super().__init__()
+
             self.cp_width = CoverPoint(BinUniform(width=width))
             self.cp_onehot = CoverPoint(BinOneHot(width), ref=self.cp_width)
             self.cp_bitwise = CoverPoint(BinBitwise(width), ref=self.cp_width)
