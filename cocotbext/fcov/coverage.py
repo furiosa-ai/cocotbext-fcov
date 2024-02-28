@@ -44,6 +44,45 @@ def compact_index(index=None):
         return ranges_str
 
 
+def traverse_type(obj, class_type, flatten):
+    for var in dir(obj):
+        attr = getattr(obj, var)
+        if flatten:
+            if isinstance(attr, class_type):
+                yield var, attr, None
+            elif isinstance(attr, Iterable):
+                try:
+                    for i, elem in enumerate(attr):
+                        if isinstance(elem, class_type):
+                            yield var, elem, i
+                except:
+                    pass
+        else:
+            if isinstance(attr, class_type):
+                yield var, attr
+            elif isinstance(attr, Iterable):
+                try:
+                    elem_list = [(i, elem) for i, elem in enumerate(attr) if isinstance(elem, class_type)]
+                    if elem_list:
+                        yield var, elem_list
+                except:
+                    pass
+
+
+def get_markdown_list(key, value, seperator="_"):
+    markdown_list = []
+    if isinstance(value, Iterable):
+        while value:
+            _, curr = value[0]
+            index_list = [i for i, v in value if curr == v]
+            value = [(i, v) for i, v in value if curr != v]
+            suffix = compact_index(index_list)
+            markdown_list.append(curr.markdown(key + seperator + suffix))
+    else:
+        markdown_list.append(value.markdown())
+    return markdown_list
+
+
 # TODO: option
 # TODO: reference to group
 class CoverPoint:
@@ -325,9 +364,12 @@ class Cross:
         sv_cross = [f"{k}: cross {', '.join(v)};" for k, v in cross.items()]
         return "\n".join(sv_cross)
 
-    def markdown(self):
+    def markdown(self, name: str | None = None):
+        if name is None:
+            name = self.name
+
         return {
-            "Cross": self.name,
+            "Cross": name,
             "Coverpoints": ", ".join(cp.name for cp in self.coverpoints),
             "# of Bins": prod(cp.num for cp in self.coverpoints),
         }
@@ -354,7 +396,7 @@ class CoverGroup:
 
     def _copy_coverpoints(self):
         cp_map = dict()
-        for k, v, _ in self._traverse_coverpoint(flatten=False):
+        for k, v in self._traverse_coverpoint(flatten=False):
             if isinstance(v, Iterable):
                 new_iterable = type(v)(copy(cp) for _, cp in v)
                 setattr(self, k, new_iterable)
@@ -369,14 +411,18 @@ class CoverGroup:
             if v.ref:
                 v.ref = cp_map[id(v.ref)]
 
-        for k, v, i in self._traverse_cross():
-            coverpoints = [cp_map[id(cp)] for cp in v.coverpoints]
-            new_cross = copy(v)
-            new_cross.coverpoints = coverpoints
-            if i is None:
-                setattr(self, k, new_cross)
+        def copy_cross(cross: Cross):
+            new_cross = copy(cross)
+            new_cross.coverpoints = type(cross.coverpoints)(cp_map[id(cp)] for cp in cross.coverpoints)
+            return new_cross
+
+        for k, v in self._traverse_cross(flatten=False):
+            if isinstance(v, Iterable):
+                new_iterable = type(v)(copy_cross(cross) for _, cross in v)
+                setattr(self, k, new_iterable)
             else:
-                getattr(self, k)[i] = new_cross
+                new_cross = copy_cross(v)
+                setattr(self, k, new_cross)
 
     def __deepcopy__(self, memo):
         obj = copy(self)
@@ -391,7 +437,7 @@ class CoverGroup:
         return res
 
     def _check_attrs(self):
-        return tuple(sorted((i for _, i, _ in chain(self._traverse_coverpoint(), self._traverse_cross())), key=hash))
+        return tuple(sorted((v for _, v, _ in chain(self._traverse_coverpoint(), self._traverse_cross())), key=hash))
 
     def __eq__(self, other):
         if not isinstance(other, CoverGroup):
@@ -402,52 +448,33 @@ class CoverGroup:
         return hash(self._check_attrs())
 
     def _traverse_coverpoint(self, flatten=True):
-        for var in dir(self):
-            obj = getattr(self, var)
-            if isinstance(obj, CoverPoint):
-                yield var, obj, None
-            elif isinstance(obj, Iterable):
-                if flatten:
-                    for i, elem in enumerate(obj):
-                        if isinstance(elem, CoverPoint):
-                            yield var, elem, i
-                else:
-                    cp_list = [(i, cp) for i, cp in enumerate(obj) if isinstance(cp, CoverPoint)]
-                    if cp_list:
-                        yield var, cp_list, None
+        return traverse_type(self, CoverPoint, flatten)
 
-    def _traverse_cross(self):
-        for var in dir(self):
-            obj = getattr(self, var)
-            if isinstance(obj, Cross):
-                yield var, obj, None
-            elif isinstance(obj, Iterable):
-                for i, elem in enumerate(obj):
-                    if isinstance(elem, Cross):
-                        yield var, elem, i
+    def _traverse_cross(self, flatten=True):
+        return traverse_type(self, Cross, flatten)
 
     def set_name(self, name: str | None, seperator: str = "_"):
         self.name = name
         if self.name is None:
             return
 
-        for var, obj, i in chain(self._traverse_coverpoint(), self._traverse_cross()):
-            if obj.name is None:
-                obj_name = var if i is None else var + seperator + str(i)
+        for k, v, i in chain(self._traverse_coverpoint(), self._traverse_cross()):
+            if v.name is None:
+                name = k if i is None else k + seperator + str(i)
             else:
-                obj_name = obj.name
-            obj.set_name(obj_name, self.name)
+                name = v.name
+            v.set_name(name, self.name)
 
     def connect(self, coverage_instance):
         if not hasattr(coverage_instance, self.sample_name):
             self.log.error(f"No sample signal {self.sample_name} in CoverGroup {self.name}")
             assert False
         self._sample_handler = getattr(coverage_instance, self.sample_name)
-        for _, cp, _ in self._traverse_coverpoint():
-            cp.connect(coverage_instance)
+        for _, v, _ in self._traverse_coverpoint():
+            v.connect(coverage_instance)
 
     def set(self, values: Dict = dict(), **kwargs):
-        cp_map = {k: v for k, v, _ in self._traverse_coverpoint(flatten=False)}
+        cp_map = dict(self._traverse_coverpoint(flatten=False))
 
         values.update(kwargs)
         for k, v in values.items():
@@ -468,9 +495,9 @@ class CoverGroup:
 
     def get(self) -> Dict:
         values = dict()
-        for k, v, _ in self._traverse_coverpoint(flatten=False):
+        for k, v in self._traverse_coverpoint(flatten=False):
             if isinstance(v, Iterable):
-                values[k] = [i.value for _, i in v]
+                values[k] = [cp.value for _, cp in v]
             else:
                 values[k] = v.value
         return values
@@ -504,14 +531,14 @@ class CoverGroup:
 
     # methods for generating systemverilog
     def sv_wire(self):
-        coverpoint_wire = [cp.sv_wire() for _, cp, _ in self._traverse_coverpoint() if cp.ref is None]
+        coverpoint_wire = [v.sv_wire() for _, v, _ in self._traverse_coverpoint() if v.ref is None]
         coverpoint_wire = [i for i in coverpoint_wire if i is not None]
         sample_wire = [f"wire {self.sample_name};"]
         return "\n".join(coverpoint_wire + sample_wire)
 
     def sv_declare(self) -> str:
         covergroup_start = [f"covergroup {self.name};"]
-        coverpoint_declare = [cp.sv_declare() for _, cp, _, in self._traverse_coverpoint()]
+        coverpoint_declare = [v.sv_declare() for _, v, _, in self._traverse_coverpoint()]
         coverpoint_declare = [i for i in coverpoint_declare if i is not None]
         cross_declare = [x.sv_declare() for _, x, _ in self._traverse_cross()]
         covergroup_end = [f"endgroup : {self.name}"]
@@ -531,30 +558,28 @@ class CoverGroup:
         valid_sv_list = [s for s in [sv_wire, sv_declare, sv_instance, sv_sample_event] if s != ""]
         return "\n\n".join(valid_sv_list) + "\n"
 
-    def markdown(self, name=None, seperator="_"):
+    def markdown(self, name: str | None = None):
         if name is None:
             name = self.name
 
-        output = f"### Covergroup {name}"
+        if name is None:
+            output = f"### Covergroup {self.__class__.__name__}"
+        else:
+            output = f"### Covergroup {name}"
         output += "\n\n"
 
         coverpoint_list = []
-        for var, cp, _ in self._traverse_coverpoint(flatten=False):
-            if isinstance(cp, Iterable):
-                while cp:
-                    _, curr_cp = cp[0]
-                    index_list = [i for i, cpi in cp if curr_cp == cpi]
-                    cp = [(i, cpi) for i, cpi in cp if curr_cp != cpi]
-                    suffix = compact_index(index_list)
-                    coverpoint_list.append(curr_cp.markdown(var + seperator + suffix))
-            else:
-                coverpoint_list.append(cp.markdown())
+        for k, v in self._traverse_coverpoint(flatten=False):
+            coverpoint_list += get_markdown_list(k, v)
 
         coverpoint_df = pd.DataFrame.from_records(coverpoint_list)
         output += coverpoint_df.to_markdown(index=False, tablefmt="github")
         output += "\n\n"
 
-        cross_list = [cx.markdown() for _, cx, _ in self._traverse_cross()]
+        cross_list = []
+        for k, v in self._traverse_cross(flatten=False):
+            cross_list += get_markdown_list(k, v)
+
         if cross_list:
             cross_df = pd.DataFrame.from_records(cross_list)
             output += cross_df.to_markdown(index=False, tablefmt="github")
@@ -581,7 +606,7 @@ class CoverageModel:
 
     def _copy_covergroups(self):
         cg_map = dict()
-        for k, v, _ in self._traverse_covergroup(flatten=False):
+        for k, v in self._traverse_covergroup(flatten=False):
             if isinstance(v, Iterable):
                 new_iterable = type(v)(deepcopy(cg) for _, cg in v)
                 setattr(self, k, new_iterable)
@@ -605,7 +630,7 @@ class CoverageModel:
         return res
 
     def _check_attrs(self):
-        return tuple(sorted((i for _, i, _ in self._traverse_covergroup()), key=hash))
+        return tuple(sorted((v for _, v, _ in self._traverse_covergroup()), key=hash))
 
     def __eq__(self, other):
         if not isinstance(other, CoverageModel):
@@ -616,33 +641,24 @@ class CoverageModel:
         return hash(self._check_attrs())
 
     def _traverse_covergroup(self, flatten=True):
-        for var in dir(self):
-            obj = getattr(self, var)
-            if isinstance(obj, CoverGroup):
-                yield var, obj, None
-            elif isinstance(obj, Iterable):
-                if flatten:
-                    for i, elem in enumerate(obj):
-                        if isinstance(elem, CoverGroup):
-                            yield var, elem, i
-                else:
-                    cg_list = [(i, cg) for i, cg in enumerate(obj) if isinstance(cg, CoverGroup)]
-                    if cg_list:
-                        yield var, cg_list, None
+        return traverse_type(self, CoverGroup, flatten)
 
     def set_name(self, name=None, seperator="_"):
         self.name = name
 
-        for var, obj, i in self._traverse_covergroup():
-            obj_name = var if i is None else var + seperator + str(i)
-            obj.set_name(obj_name, seperator=seperator)
+        for k, v, i in self._traverse_covergroup():
+            if v.name is None:
+                name = k if i is None else k + seperator + str(i)
+            else:
+                name = v.name
+            v.set_name(name, seperator=seperator)
 
     def connect(self, dut):
         if hasattr(dut, self.name):
             self.log.info("Coverage enabled for %s", self.name)
             cov_inst = getattr(dut, self.name)
-            for _, cg, _ in self._traverse_covergroup():
-                cg.connect(cov_inst)
+            for _, v, _ in self._traverse_covergroup():
+                v.connect(cov_inst)
         else:
             self.log.warning("Coverage instance %s does not exist in dut!", self.name)
 
@@ -650,26 +666,21 @@ class CoverageModel:
         if name is None:
             name = self.name
         header = f"module {name} ();\n"
-        body = "\n".join([cg.systemverilog() for _, cg, _ in self._traverse_covergroup()])
+        body = "\n".join([v.systemverilog() for _, v, _ in self._traverse_covergroup()])
         footer = "endmodule\n"
         return header + body + footer
 
-    def markdown(self, name=None, seperator="_"):
+    def markdown(self, name: str | None = None):
         if name is None:
             name = self.name
 
-        header = f"## {name} ({self.__class__.__name__})\n\n"
+        if name is None:
+            header = f"## {self.__class__.__name__}\n\n"
+        else:
+            header = f"## {name} ({self.__class__.__name__})\n\n"
         covergroup_list = []
-        for var, cg, _ in self._traverse_covergroup(flatten=False):
-            if isinstance(cg, Iterable):
-                while cg:
-                    _, curr_cg = cg[0]
-                    index_list = [i for i, cgi in cg if curr_cg == cgi]
-                    cg = [(i, cgi) for i, cgi in cg if curr_cg != cgi]
-                    suffix = compact_index(index_list)
-                    covergroup_list.append(curr_cg.markdown(var + seperator + suffix))
-            else:
-                covergroup_list.append(cg.markdown())
+        for k, v in self._traverse_covergroup(flatten=False):
+            covergroup_list += get_markdown_list(k, v)
         body = "".join(covergroup_list)
 
         return header + body

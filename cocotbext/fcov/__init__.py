@@ -22,4 +22,4 @@ from .bins.type import (
 from .coverage import CoverPoint, Cross
 from .coverage import CoverGroup
 from .coverage import CoverageModel, CoverageCollector
-from .coverage import compact_index
+from .coverage import compact_index, traverse_type, get_markdown_list

@@ -5,11 +5,11 @@ from typing import Iterable
 from argparse import ArgumentParser
 from distutils.spawn import find_executable
 
-from cocotbext.fcov import CoverageModel, compact_index
+from cocotbext.fcov import CoverageModel
+from cocotbext.fcov import traverse_type, get_markdown_list
 
 
-def get_coverage_models(cov_file):
-    coverage_models = dict()
+def traverse_coverage_models(cov_file, flatten=True):
     if os.path.isfile(cov_file):
         sys.path.append(os.path.dirname(cov_file))
         module_name = os.path.splitext(os.path.basename(cov_file))[0]
@@ -17,17 +17,7 @@ def get_coverage_models(cov_file):
         coverage_module = importlib.util.module_from_spec(coverage_spec)
         coverage_spec.loader.exec_module(coverage_module)
 
-        for attr, value in coverage_module.__dict__.items():
-            if isinstance(value, CoverageModel):
-                coverage_models[attr] = value
-            elif isinstance(value, Iterable):
-                try:
-                    model_list = [(i, m) for i, m in enumerate(value) if isinstance(m, CoverageModel)]
-                    if model_list:
-                        coverage_models[attr] = model_list
-                except:
-                    pass
-    return coverage_models
+        yield from traverse_type(coverage_module, CoverageModel, flatten)
 
 
 def main():
@@ -53,23 +43,13 @@ def main():
     sv_body = []
     md_body = []
     for f in filelist:
-        cov_models = get_coverage_models(f)
-        for name, model in cov_models.items():
-            if isinstance(model, Iterable):
-                for i, m in model:
-                    m.set_name(f"{name}_{i}")
-                    sv_body.append(m.systemverilog())
+        for k, v, i in traverse_coverage_models(f):
+            name = k if i is None else f"{k}_{i}"
+            v.set_name(name)
+            sv_body.append(v.systemverilog())
 
-                while model:
-                    _, cov_model = model[0]
-                    index_list = [i for i, m in model if cov_model == m]
-                    model = [(i, m) for i, m in model if cov_model != m]
-                    md_suffix = compact_index(index_list)
-                    md_body.append(m[0].markdown(f"{name}_{md_suffix}"))
-            else:
-                model.set_name(name)
-                sv_body.append(model.systemverilog())
-                md_body.append(model.markdown())
+        for k, v in traverse_coverage_models(f, flatten=False):
+            md_body += get_markdown_list(k, v)
 
     with open(args.sv_output, "w") as f:
         sv_header = f"`ifdef COCOTBEXT_FCOV\n"
