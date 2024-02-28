@@ -358,7 +358,7 @@ class CoverGroup:
             if isinstance(v, Iterable):
                 new_iterable = type(v)(copy(cp) for _, cp in v)
                 setattr(self, k, new_iterable)
-                for cp, new_cp in zip(v, new_iterable):
+                for (_, cp), new_cp in zip(v, new_iterable):
                     cp_map[id(cp)] = new_cp
             else:
                 new_cp = copy(v)
@@ -585,7 +585,7 @@ class CoverageModel:
             if isinstance(v, Iterable):
                 new_iterable = type(v)(deepcopy(cg) for _, cg in v)
                 setattr(self, k, new_iterable)
-                for cg, new_cg in zip(v, new_iterable):
+                for (_, cg), new_cg in zip(v, new_iterable):
                     cg_map[id(cg)] = new_cg
             else:
                 new_cg = deepcopy(v)
