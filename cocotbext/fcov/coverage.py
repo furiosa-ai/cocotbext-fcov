@@ -206,8 +206,8 @@ class CoverPoint:
         if self.ref:
             return self.ref.signal
         else:
-            assert self.name is not None, "Error!! coverpoint's name should be not None"
-            assert self.group is not None, "Error!! coverpoint's group name should be not None"
+            assert self.name is not None, "Error!! coverpoint's name should not be None"
+            assert self.group is not None, "Error!! coverpoint's group name should not be None"
             return self.group + "_" + self.name
 
     @property
