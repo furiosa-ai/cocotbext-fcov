@@ -448,10 +448,10 @@ class CoverGroup:
         return hash(self._check_attrs())
 
     def _traverse_coverpoint(self, flatten=True):
-        return traverse_type(self, CoverPoint, flatten)
+        yield from traverse_type(self, CoverPoint, flatten)
 
     def _traverse_cross(self, flatten=True):
-        return traverse_type(self, Cross, flatten)
+        yield from traverse_type(self, Cross, flatten)
 
     def set_name(self, name: str | None, seperator: str = "_"):
         self.name = name
@@ -641,7 +641,7 @@ class CoverageModel:
         return hash(self._check_attrs())
 
     def _traverse_covergroup(self, flatten=True):
-        return traverse_type(self, CoverGroup, flatten)
+        yield from traverse_type(self, CoverGroup, flatten)
 
     def set_name(self, name=None, seperator="_"):
         self.name = name
