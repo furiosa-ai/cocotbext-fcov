@@ -687,7 +687,7 @@ class CoverageModel:
 
 
 class CoverageCollector:
-    def __init__(self, dut, cov_model, log_level: str = "INFO") -> None:
+    def __init__(self, dut, cov_model, log_level: str = "INFO", **kwargs) -> None:
         """
         dut:            cocotb entity for dut
         cov_model:      instances of coverage model
