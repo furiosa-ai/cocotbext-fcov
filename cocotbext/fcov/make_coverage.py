@@ -19,7 +19,7 @@ def traverse_coverage_models(cov_file, flatten=True):
         yield from traverse_type(coverage_module, CoverageModel, flatten)
 
 
-def main():
+def main(append=False):
     parser = ArgumentParser()
     parser.add_argument(
         "--file", "-f", default="coverage.py", type=str, help="python files that include coverage model instances"
@@ -50,14 +50,15 @@ def main():
         for k, v in traverse_coverage_models(f, flatten=False):
             md_body += get_markdown_list(k, v)
 
-    with open(args.sv_output, "w") as f:
+    open_mode = "a" if append else "w"
+    with open(args.sv_output, open_mode) as f:
         sv_header = f"`ifdef COCOTBEXT_FCOV\n"
         sv_footer = "`endif\n"
         f.write(sv_header)
         f.write("\n".join(sv_body))
         f.write(sv_footer)
 
-    with open(args.md_output, "w") as f:
+    with open(args.md_output, open_mode) as f:
         f.write("".join(md_body))
 
     formatter = "verible-verilog-format"
