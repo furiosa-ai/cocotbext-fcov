@@ -1,7 +1,6 @@
 import os
 import sys
 import importlib.util
-from typing import Iterable
 from argparse import ArgumentParser
 from distutils.spawn import find_executable
 

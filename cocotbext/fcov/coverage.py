@@ -79,7 +79,7 @@ def get_markdown_list(key, value, seperator="_"):
             suffix = compact_index(index_list)
             markdown_list.append(curr.markdown(key + seperator + suffix))
     else:
-        markdown_list.append(value.markdown())
+        markdown_list.append(value.markdown(key))
     return markdown_list
 
 
