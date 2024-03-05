@@ -86,7 +86,7 @@ def test_bin_list():
         bin_group.systemverilog()
         == "bins test = {-11};\nbins bin_neg10_9 = {[-10:9]};\nbins bin_10_19[5] = {[10:19]} with (item % 2 == 0);"
     )
-    assert bin_group.markdown() == "-11, [-10:9], {10, 12, 14, 16, 18}/5"
+    assert bin_group.markdown() == "-11, [-10:9], 10, 12, 14, 16, 18"
 
 
 def test_prefix():
@@ -161,7 +161,7 @@ def test_add():
         bin_group.systemverilog()
         == "bins test_a = {-11};\nbins bin_neg10_9 = {[-10:9]};\nbins test_c[5] = {[10:19]} with (item % 2 == 0);"
     )
-    assert bin_group.markdown() == "-11, [-10:9], {10, 12, 14, 16, 18}/5"
+    assert bin_group.markdown() == "-11, [-10:9], 10, 12, 14, 16, 18"
 
     bin_group = [bin_list[0]] + BinGroup([bin_list[1]])
     bin_group += [bin_list[2]]
@@ -174,4 +174,4 @@ def test_add():
         bin_group.systemverilog()
         == "bins test_a = {-11};\nbins bin_neg10_9 = {[-10:9]};\nbins test_c[5] = {[10:19]} with (item % 2 == 0);"
     )
-    assert bin_group.markdown() == "-11, [-10:9], {10, 12, 14, 16, 18}/5"
+    assert bin_group.markdown() == "-11, [-10:9], 10, 12, 14, 16, 18"

@@ -94,14 +94,14 @@ def test_bin_range():
     assert bin_range.width == 8
     assert bin_range.num == 40
     assert bin_range.systemverilog() == "bins TEST2[] = {[-100:99]} with (item % 5 == 0);"
-    assert bin_range.markdown() == "{-100, -95, -90, ..., 90, 95}/40"
+    assert bin_range.markdown() == "-100, -95, -90, ..., 90, 95"
 
     bin_range = BinRange(-321, 98, 4, name="TEST3")
     assert bin_range.type == "Range"
     assert bin_range.width == 10
     assert bin_range.num == 105
     assert bin_range.systemverilog() == "bins TEST3[] = {[-321:97]} with (item % 4 == 3);"
-    assert bin_range.markdown() == "{-321, -317, -313, ..., 91, 95}/105"
+    assert bin_range.markdown() == "-321, -317, -313, ..., 91, 95"
 
 
 def test_bin_dict():

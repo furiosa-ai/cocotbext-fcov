@@ -89,7 +89,7 @@ def test_cp_dict_list():
         "Bin Type": "Custom",
         "# of Bins": 3,
         "Bins": "-11, [-10:9], {10, 12, 14, 16, 18}",
-        "Ignore Bins": "-10, {0, 2, 4, 6, 8}, {10, 15}/2",
+        "Ignore Bins": "-10, {0, 2, 4, 6, 8}, 10, 15",
         "Illegal Bins": "",
     }
 
@@ -139,7 +139,7 @@ def test_cp_uniform_range_single():
         "Bin Type": "Uniform",
         "# of Bins": 4,
         "Bins": "{-100, -95, -90, ..., 90, 95}/4",
-        "Ignore Bins": "{-121, -111, -101, ..., 79, 89}/22",
+        "Ignore Bins": "-121, -111, -101, ..., 79, 89",
         "Illegal Bins": "[-10:9]",
     }
 

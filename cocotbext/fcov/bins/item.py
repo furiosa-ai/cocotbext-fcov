@@ -435,12 +435,14 @@ class BinItem:
 
     def markdown(self, format: str | None = None, shorten=True, enum=False):
         if len(self.items) == 1 and self._is_type_range_with_step(self.items[0]):
-            is_multiple = len(self.items[0]) > 1
+            flatten = len(self.items[0]) == self.num
+            is_multiple = len(self.items[0]) > 1 and not flatten
+            divider = f"/{self.num}" if not flatten and self.num > 1 else ""
         else:
             is_multiple = len(self.items) > 1
+            divider = f"/{self.num}" if self.num > 1 else ""
         md_items = self.as_string(format=format, shorten=shorten)
         md_items = "{" + md_items + "}" if is_multiple else md_items
-        divider = f"/{self.num}" if self.num > 1 else ""
         if enum:
             return self.name + "(" + md_items + divider + ")"
         else:
