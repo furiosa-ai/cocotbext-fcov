@@ -187,9 +187,11 @@ class BinGroup:
         ]
         return "\n".join(bin_sv_list)
 
-    def markdown(self, format: str | None = None, shorten=True, enum=False):
+    def markdown(self, format: str | None = None, shorten: bool | None=None, enum=False):
         if format is None:
             format = self.format
+        if shorten is None:
+            shorten = self.type != "Custom"
 
         bin_md_list = [
             v.markdown(format=format, shorten=shorten, enum=enum) for v in self.bins.values() if not v.is_default()

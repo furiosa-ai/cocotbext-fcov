@@ -287,7 +287,7 @@ class CoverPoint:
             sv_bins = " {\n" + sv_bins + "}" if sv_bins else ";"
             return sv_coverpoint + sv_bins
 
-    def markdown(self, name: str | None = None):
+    def markdown(self, name: str | None = None, shorten: bool | None = None):
         if name is None:
             name = self.name
 
@@ -296,9 +296,9 @@ class CoverPoint:
             "Width": f"[{self.width - 1}:0]" if self.width else "",
             "Bin Type": self.bins.type,
             "# of Bins": self.bins.num,
-            "Bins": self.bins.markdown(format=self.format),
-            "Ignore Bins": self.ignore_bins.markdown(format=self.format),
-            "Illegal Bins": self.illegal_bins.markdown(format=self.format),
+            "Bins": self.bins.markdown(format=self.format, shorten=shorten),
+            "Ignore Bins": self.ignore_bins.markdown(format=self.format, shorten=shorten),
+            "Illegal Bins": self.illegal_bins.markdown(format=self.format, shorten=shorten),
         }
 
 

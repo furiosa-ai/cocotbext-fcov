@@ -67,7 +67,7 @@ class BinDict(BinGroup):
     ):
         super().__init__(bins=bins, width=width, prefix=prefix, format=format)
 
-    def markdown(self, format: str | None = None, shorten=False, enum=True):
+    def markdown(self, format: str | None = None, shorten: bool | None=False, enum=True):
         return super().markdown(format, shorten, enum)
 
 
@@ -258,7 +258,7 @@ class BinOutOfSpec(BinGroup):
     def systemverilog(self, format: str | None = None):
         return ""
 
-    def markdown(self, format: str | None = None):
+    def markdown(self, format: str | None = None, shorten: bool | None=False, enum=True):
         return "Out of spec"
 
 
@@ -270,7 +270,7 @@ class BinBitwise(BinGroup):
     def __len__(self):
         return self.width * 2
 
-    def markdown(self, format: str | None = None):
+    def markdown(self, format: str | None = None, shorten: bool | None=False, enum=True):
         return "0, 1 for each bit"
 
 

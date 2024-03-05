@@ -292,7 +292,7 @@ def test_cp_window_onehot_bool():
         "Width": "[5:0]",
         "Bin Type": "Custom",
         "# of Bins": 10,
-        "Bins": "0x1, 0x2, 0x4, ..., 0x30, default",
+        "Bins": "0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x3, 0xc, 0x30, default",
         "Ignore Bins": "0b1, 0b10, 0b100, 0b1000",
         "Illegal Bins": "FALSE(0), TRUE(1)",
     }
