@@ -202,9 +202,9 @@ class CoverPoint:
     def __le__(self, value):
         self.value = value
 
-    def drive(self, value=None):
+    def _drive(self, value=None):
         if self.ref:
-            return self.ref.drive(value)
+            return self.ref._drive(value)
 
         if value is None:
             value = self.value
@@ -405,6 +405,7 @@ class CoverGroup:
         self._sample_thread = None
         self._sample_event = Event()
         self._sample_values = []
+        self._last_sample_value = None
 
         self._connected_coverpoints = None
 
@@ -527,28 +528,34 @@ class CoverGroup:
             else:
                 cp.value = v
 
-    def drive(self, values: Dict = dict(), **kwargs):
-        cp_map = self._get_connected_coverpoints()
-
+    def _drive(self, values: Dict = dict(), **kwargs):
         values.update(kwargs)
+        if values == self._last_sample_value:
+            return
+
+        cp_map = self._get_connected_coverpoints()
+        self._last_sample_value = values
+
         for k, v in cp_map.items():
             if isinstance(v, list):
                 k_value = values.get(k, [None] * len(v))
                 assert len(v) == len(k_value), f"Length of values ({len(v)}) is not same to CoverPoint {k} ({len(v)})"
                 for (_, cpi), valuei in zip(v, k_value):
-                    cpi.drive(valuei)
+                    cpi._drive(valuei)
             else:
-                v.drive(values.get(k, None))
+                v._drive(values.get(k, None))
 
     def __call__(self, **kwargs):
         self.set(values=dict(), **kwargs)
 
     async def _sample(self):
+        handler_value = bool(self._sample_handler.value)
+
         while True:
             await self._sample_event.wait()
             while self._sample_values:
-                self.drive(self._sample_values.pop(0))
-                self._sample_handler.value = not self._sample_handler.value
+                self._drive(self._sample_values.pop(0))
+                self._sample_handler.value = handler_value = not handler_value
                 await Edge(self._sample_handler)
             self._sample_event.clear()
 
