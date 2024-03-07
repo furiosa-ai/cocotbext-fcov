@@ -394,6 +394,8 @@ class CoverGroup:
         self._sample_handler = None
         self._lock = Lock()
 
+        self._connected_coverpoints = None
+
     def _copy_coverpoints(self):
         cp_map = dict()
         for k, v in self._traverse_coverpoint(flatten=False):
@@ -473,8 +475,12 @@ class CoverGroup:
         for _, v, _ in self._traverse_coverpoint():
             v.connect(coverage_instance)
 
+        self._connected_coverpoints = dict(self._traverse_coverpoint(flatten=False))
+
     def set(self, values: Dict = dict(), **kwargs):
-        cp_map = dict(self._traverse_coverpoint(flatten=False))
+        if self._connected_coverpoints is None:
+            self._connected_coverpoints = dict(self._traverse_coverpoint(flatten=False))
+        cp_map = self._connected_coverpoints
 
         values.update(kwargs)
         for k, v in values.items():
@@ -494,8 +500,12 @@ class CoverGroup:
                 cp.value = v
 
     def get(self) -> Dict:
+        if self._connected_coverpoints is None:
+            self._connected_coverpoints = dict(self._traverse_coverpoint(flatten=False))
+        cp_map = self._connected_coverpoints
+
         values = dict()
-        for k, v in self._traverse_coverpoint(flatten=False):
+        for k, v in cp_map.items():
             if isinstance(v, Iterable):
                 values[k] = [cp.value for _, cp in v]
             else:
