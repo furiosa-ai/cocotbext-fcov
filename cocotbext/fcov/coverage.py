@@ -8,7 +8,7 @@ from itertools import chain
 
 import cocotb
 from cocotb.log import SimLog
-from cocotb.triggers import Edge, Lock
+from cocotb.triggers import Edge, Event
 from cocotb.binary import BinaryValue
 
 from .bins.group import BinGroup
@@ -71,7 +71,7 @@ def traverse_type(obj, class_type, flatten):
 
 def get_markdown_list(key, value, seperator="_"):
     markdown_list = []
-    if isinstance(value, Iterable):
+    if isinstance(value, list):
         while value:
             _, curr = value[0]
             index_list = [i for i, v in value if curr == v]
@@ -152,7 +152,7 @@ class CoverPoint:
         return self.__copy__()
 
     def __repr__(self):
-        ref_name = None if self.ref is None else self.ref.name
+        ref_name = self.ref.name if self.ref else None
         return (
             f"CoverPoint(bins=({self.bins}), ignore_bins=({self.ignore_bins}),"
             f" illegal_bins=({self.illegal_bins}), width={self._width},"
@@ -184,35 +184,45 @@ class CoverPoint:
     def value(self) -> Any:
         if self.ref:
             return self.ref.value
-        if self._value is None:
-            self._value = self._handler.value
-        return self._value
+        elif self._value is None:
+            return self._handler.value
+        else:
+            return self._value
 
     @value.setter
     def value(self, value: Any):
         if self.ref:
             self.ref.value = value
-        else:
-            if isinstance(value, str):
-                value = BinaryValue(value)
-            self._value = value
-            self._handler.value = value
+            return
+
+        if isinstance(value, str):
+            value = BinaryValue(value)
+        self._value = value
 
     def __le__(self, value):
         self.value = value
+
+    def drive(self, value=None):
+        if self.ref:
+            return self.ref.drive(value)
+
+        if value is None:
+            value = self.value
+        if value is not None:
+            self._handler.value = value
 
     @property
     def signal(self) -> str:
         if self.ref:
             return self.ref.signal
-        else:
-            assert self.name is not None, "Error!! coverpoint's name should not be None"
-            assert self.group is not None, "Error!! coverpoint's group name should not be None"
-            return self.group + "_" + self.name
+
+        assert self.name is not None, "Error!! coverpoint's name should not be None"
+        assert self.group is not None, "Error!! coverpoint's group name should not be None"
+        return self.group + "_" + self.name
 
     @property
     def width(self):
-        if self.ref is not None:
+        if self.ref:
             return self.ref.width
         if self._width is not None:
             return self._width
@@ -238,12 +248,12 @@ class CoverPoint:
         self.group = group
 
     def connect(self, coverage_instance):
-        if self.ref is not None:
+        if self.ref:
             return
+
         if not hasattr(coverage_instance, self.signal):
             self.log.error(f"No coverpoint signal {self.signal}")
             assert False
-
         self._handler = getattr(coverage_instance, self.signal)
 
     @property
@@ -392,14 +402,16 @@ class CoverGroup:
         self.log.setLevel(log_level)
 
         self._sample_handler = None
-        self._lock = Lock()
+        self._sample_thread = None
+        self._sample_event = Event()
+        self._sample_values = []
 
         self._connected_coverpoints = None
 
     def _copy_coverpoints(self):
         cp_map = dict()
         for k, v in self._traverse_coverpoint(flatten=False):
-            if isinstance(v, Iterable):
+            if isinstance(v, list):
                 new_iterable = type(v)(copy(cp) for _, cp in v)
                 setattr(self, k, new_iterable)
                 for (_, cp), new_cp in zip(v, new_iterable):
@@ -419,7 +431,7 @@ class CoverGroup:
             return new_cross
 
         for k, v in self._traverse_cross(flatten=False):
-            if isinstance(v, Iterable):
+            if isinstance(v, list):
                 new_iterable = type(v)(copy_cross(cross) for _, cross in v)
                 setattr(self, k, new_iterable)
             else:
@@ -471,16 +483,34 @@ class CoverGroup:
         if not hasattr(coverage_instance, self.sample_name):
             self.log.error(f"No sample signal {self.sample_name} in CoverGroup {self.name}")
             assert False
-        self._sample_handler = getattr(coverage_instance, self.sample_name)
+
         for _, v, _ in self._traverse_coverpoint():
             v.connect(coverage_instance)
-
         self._connected_coverpoints = dict(self._traverse_coverpoint(flatten=False))
 
-    def set(self, values: Dict = dict(), **kwargs):
+        if self._sample_thread:
+            self._sample_thread.kill()
+        self._sample_handler = getattr(coverage_instance, self.sample_name)
+        self._sample_thread = cocotb.start_soon(self._sample())
+
+    def _get_connected_coverpoints(self):
         if self._connected_coverpoints is None:
             self._connected_coverpoints = dict(self._traverse_coverpoint(flatten=False))
-        cp_map = self._connected_coverpoints
+        return self._connected_coverpoints
+
+    def get(self) -> Dict:
+        cp_map = self._get_connected_coverpoints()
+
+        values = dict()
+        for k, v in cp_map.items():
+            if isinstance(v, list):
+                values[k] = [cp.value for _, cp in v]
+            else:
+                values[k] = v.value
+        return values
+
+    def set(self, values: Dict = dict(), **kwargs):
+        cp_map = self._get_connected_coverpoints()
 
         values.update(kwargs)
         for k, v in values.items():
@@ -490,44 +520,41 @@ class CoverGroup:
                 assert False
 
             cp = cp_map.get(k)
-            if isinstance(cp, Iterable):
-                assert isinstance(v, Iterable), f"Value ({v}) should be Iterable for CoverPoint {k}"
+            if isinstance(cp, list):
                 assert len(cp) == len(v), f"Length of values ({len(v)}) is not same to CoverPoint {k} ({len(cp)})"
                 for (_, cpi), vi in zip(cp, v):
                     cpi.value = vi
             else:
-                assert not isinstance(v, Iterable)
                 cp.value = v
 
-    def get(self) -> Dict:
-        if self._connected_coverpoints is None:
-            self._connected_coverpoints = dict(self._traverse_coverpoint(flatten=False))
-        cp_map = self._connected_coverpoints
+    def drive(self, values: Dict = dict(), **kwargs):
+        cp_map = self._get_connected_coverpoints()
 
-        values = dict()
+        values.update(kwargs)
         for k, v in cp_map.items():
-            if isinstance(v, Iterable):
-                values[k] = [cp.value for _, cp in v]
+            if isinstance(v, list):
+                k_value = values.get(k, [None] * len(v))
+                assert len(v) == len(k_value), f"Length of values ({len(v)}) is not same to CoverPoint {k} ({len(v)})"
+                for (_, cpi), valuei in zip(v, k_value):
+                    cpi.drive(valuei)
             else:
-                values[k] = v.value
-        return values
+                v.drive(values.get(k, None))
 
     def __call__(self, **kwargs):
         self.set(values=dict(), **kwargs)
 
-    async def _sample_thread(self, values):
-        await self._lock.acquire()
-        backup_values = self.get()
-
-        self.set(values)
-        self._sample_handler.value = not self._sample_handler.value
-        await Edge(self._sample_handler)
-
-        self.set(backup_values)
-        self._lock.release()
+    async def _sample(self):
+        while True:
+            await self._sample_event.wait()
+            while self._sample_values:
+                self.drive(self._sample_values.pop(0))
+                self._sample_handler.value = not self._sample_handler.value
+                await Edge(self._sample_handler)
+            self._sample_event.clear()
 
     def sample(self):
-        cocotb.start_soon(self._sample_thread(self.get()))
+        self._sample_values.append(self.get())
+        self._sample_event.set()
 
     @property
     def sample_name(self):
@@ -617,7 +644,7 @@ class CoverageModel:
     def _copy_covergroups(self):
         cg_map = dict()
         for k, v in self._traverse_covergroup(flatten=False):
-            if isinstance(v, Iterable):
+            if isinstance(v, list):
                 new_iterable = type(v)(deepcopy(cg) for _, cg in v)
                 setattr(self, k, new_iterable)
                 for (_, cg), new_cg in zip(v, new_iterable):
