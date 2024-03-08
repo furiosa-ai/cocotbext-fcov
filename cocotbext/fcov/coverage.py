@@ -405,7 +405,7 @@ class CoverGroup:
         self._sample_thread = None
         self._sample_event = Event()
         self._sample_values = []
-        self._last_sample_value = None
+        self._last_drive_values = None
 
         self._connected_coverpoints = None
 
@@ -530,11 +530,14 @@ class CoverGroup:
 
     def _drive(self, values: Dict = dict(), **kwargs):
         values.update(kwargs)
-        if values == self._last_sample_value:
-            return
+        try:
+            if values == self._last_drive_values:
+                return
+        except ValueError:
+            pass
 
         cp_map = self._get_connected_coverpoints()
-        self._last_sample_value = values
+        self._last_drive_values = values
 
         for k, v in cp_map.items():
             if isinstance(v, list):
