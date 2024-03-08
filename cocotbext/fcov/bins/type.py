@@ -68,6 +68,8 @@ class BinDict(BinGroup):
         super().__init__(bins=bins, width=width, prefix=prefix, format=format)
 
     def markdown(self, format: str | None = None, shorten: bool | None=False, enum=True):
+        if shorten is None:
+            shorten = False
         return super().markdown(format, shorten, enum)
 
 
