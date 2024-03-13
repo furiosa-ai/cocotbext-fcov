@@ -221,6 +221,32 @@ class CoverPoint:
         return self.group + "_" + self.name
 
     @property
+    def max(self):
+        if self.ref:
+            return self.ref.max
+
+        bins_max = list(
+            filter(
+                lambda x: x is not None,
+                [self.bins.max, self.ignore_bins.max, self.illegal_bins.max],
+            )
+        )
+        return max(bins_max) if bins_max else None
+
+    @property
+    def min(self):
+        if self.ref:
+            return self.ref.min
+
+        bins_min = list(
+            filter(
+                lambda x: x is not None,
+                [self.bins.min, self.ignore_bins.min, self.illegal_bins.min],
+            )
+        )
+        return min(bins_min) if bins_min else None
+
+    @property
     def width(self):
         if self.ref:
             return self.ref.width
