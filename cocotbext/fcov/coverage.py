@@ -74,12 +74,19 @@ def get_markdown_list(key, value, seperator="_"):
     if isinstance(value, list):
         while value:
             _, curr = value[0]
-            index_list = [i for i, v in value if curr == v]
-            value = [(i, v) for i, v in value if curr != v]
-            suffix = compact_index(index_list)
-            markdown_list.append(curr.markdown(key + seperator + suffix))
+            if getattr(curr, "name", None):
+                markdown_list.append(curr.markdown())
+                value.pop(0)
+            else:
+                index_list = [i for i, v in value if curr == v]
+                value = [(i, v) for i, v in value if curr != v]
+                suffix = compact_index(index_list)
+                markdown_list.append(curr.markdown(key + seperator + suffix))
     else:
-        markdown_list.append(value.markdown(key))
+        if getattr(value, "name", None):
+            markdown_list.append(value.markdown())
+        else:
+            markdown_list.append(value.markdown(key))
     return markdown_list
 
 

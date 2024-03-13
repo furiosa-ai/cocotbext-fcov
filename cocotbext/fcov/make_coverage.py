@@ -44,7 +44,8 @@ def main(append=False):
     for f in filelist:
         for k, v, i in traverse_coverage_models(f):
             name = k if i is None else f"{k}_{i}"
-            v.set_name(name)
+            if not getattr(v, "name", None):
+                v.set_name(name)
             sv_body.append(v.systemverilog())
 
         for k, v in traverse_coverage_models(f, flatten=False):
