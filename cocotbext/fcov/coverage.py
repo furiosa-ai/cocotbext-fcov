@@ -192,7 +192,12 @@ class CoverPoint:
         if self.ref:
             return self.ref.value
         elif self._value is None:
-            return self._handler.value
+            try:
+                return self._handler.value
+            except AttributeError as e:
+                print(e)
+                print(f"- signal name: '{self.signal}'")
+                raise
         else:
             return self._value
 

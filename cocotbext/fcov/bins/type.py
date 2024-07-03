@@ -264,6 +264,7 @@ class BinOutOfSpec(BinGroup):
         return "Out of spec"
 
 
+# TODO: lsb, msb options
 class BinBitwise(BinGroup):
     def __init__(self, width: int | None = None, prefix: str = "bin", format: str | None = None):
         assert width is not None, "Error!! width should be specified in BinBitwise"
