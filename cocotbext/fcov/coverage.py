@@ -69,12 +69,12 @@ def traverse_type(obj, class_type, flatten):
                     pass
 
 
-def get_markdown_list(key, value, seperator="_"):
+def get_markdown_list(key, value, seperator="_", use_name=False):
     markdown_list = []
     if isinstance(value, list):
         while value:
             _, curr = value[0]
-            if getattr(curr, "name", None):
+            if use_name and getattr(curr, "name", None):
                 markdown_list.append(curr.markdown())
                 value.pop(0)
             else:
@@ -83,7 +83,7 @@ def get_markdown_list(key, value, seperator="_"):
                 suffix = compact_index(index_list)
                 markdown_list.append(curr.markdown(key + seperator + suffix))
     else:
-        if getattr(value, "name", None):
+        if use_name and getattr(value, "name", None):
             markdown_list.append(value.markdown())
         else:
             markdown_list.append(value.markdown(key))
