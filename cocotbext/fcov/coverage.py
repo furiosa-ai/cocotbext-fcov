@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import pandas as pd
 from copy import deepcopy, copy
 from math import prod
@@ -18,24 +19,27 @@ from .bins.type import BinBitwise, BinOutOfSpec
 def compact_index(index=None):
     if not index:
         return ""
-    index = sorted(index)
 
     ranges = []
-
     def append_range(start, end):
         if start == end:
             ranges.append(str(start))
         else:
             ranges.append(f"{start}-{end}")
 
-    start = end = index[0]
-    for i in index[1:]:
-        if i == end + 1:
-            end += 1
-        else:
-            append_range(start, end)
-            start = end = i
-    append_range(start, end)
+    try:
+        index = sorted(map(int, index))
+
+        start = end = index[0]
+        for i in index[1:]:
+            if i == end + 1:
+                end += 1
+            else:
+                append_range(start, end)
+                start = end = i
+        append_range(start, end)
+    except:
+        ranges = index
 
     ranges_str = ", ".join(ranges)
     if "-" in ranges_str or "," in ranges_str:
@@ -69,14 +73,25 @@ def traverse_type(obj, class_type, flatten):
                     pass
 
 
-def get_markdown_list(key, value, seperator="_", use_name=False):
+def get_markdown_list(key, value, seperator="_", use_name=True):
     markdown_list = []
     if isinstance(value, list):
         while value:
             _, curr = value[0]
             if use_name and getattr(curr, "name", None):
-                markdown_list.append(curr.markdown())
-                value.pop(0)
+                name_list = [v.name for _, v in value if curr == v and getattr(v, "name", None)]
+                value = [(i, v) for i, v in value if not (curr == v and getattr(v, "name", None))]
+
+                prefix = os.path.commonprefix([s for s in name_list])
+                name_list = [s[len(prefix):] for s in name_list]
+
+                suffix = os.path.commonprefix([s[::-1] for s in name_list])[::-1]
+                if suffix:
+                    name_list = [s[:-len(suffix)] for s in name_list]
+
+                assert len(name_list) == len(set(name_list)), "ERROR!! There is a duplicated name."
+                name = compact_index(name_list)
+                markdown_list.append(curr.markdown(prefix + name + suffix))
             else:
                 index_list = [i for i, v in value if curr == v]
                 value = [(i, v) for i, v in value if curr != v]
