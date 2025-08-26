@@ -543,7 +543,7 @@ class CoverGroup:
         self._connected_coverpoints = dict(self._traverse_coverpoint(flatten=False))
 
         if self._sample_thread:
-            self._sample_thread.kill()
+            self._sample_thread.cancel()
         self._sample_handler = getattr(coverage_instance, self.sample_name)
         self._sample_thread = cocotb.start_soon(self._sample())
 
