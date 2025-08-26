@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import logging
 import pandas as pd
 from copy import deepcopy, copy
 from math import prod
@@ -8,7 +9,6 @@ from typing import Any, Dict, Iterable
 from itertools import chain
 
 import cocotb
-from cocotb.log import SimLog
 from cocotb.triggers import Edge, Event
 from cocotb.binary import BinaryValue
 
@@ -133,7 +133,7 @@ class CoverPoint:
         format:         value format (str). {b, o, d, x, h}
         log_level:      log level in cocotb simulation log
         """
-        self.log = SimLog(f"cocotbext.fcov.{self.__class__.__name__}")
+        self.log = logging.getLogger(f"cocotbext.fcov.{self.__class__.__name__}")
         self.log.setLevel(log_level)
 
         self.prefix = prefix
@@ -451,7 +451,7 @@ class CoverGroup:
         """
         self.set_name(name)
 
-        self.log = SimLog(f"cocotbext.fcov.{self.__class__.__name__}")
+        self.log = logging.getLogger(f"cocotbext.fcov.{self.__class__.__name__}")
         self.log.setLevel(log_level)
 
         self._sample_handler = None
@@ -701,7 +701,7 @@ class CoverageModel:
         """
         self.set_name(name)
 
-        self.log = SimLog(f"cocotbext.fcov.{self.__class__.__name__}")
+        self.log = logging.getLogger(f"cocotbext.fcov.{self.__class__.__name__}")
         self.log.setLevel(log_level)
 
     def _copy_covergroups(self):
@@ -795,7 +795,7 @@ class CoverageCollector:
         """
         self.dut = dut
 
-        self.log = SimLog(f"cocotbext.fcov.{self.__class__.__name__}")
+        self.log = logging.getLogger(f"cocotbext.fcov.{self.__class__.__name__}")
         self.log.setLevel(log_level)
 
         self.connect_coverage(dut, cov_model)
