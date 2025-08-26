@@ -10,7 +10,7 @@ from itertools import chain
 
 import cocotb
 from cocotb.triggers import Edge, Event
-from cocotb.binary import BinaryValue
+from cocotb.types import LogicArray
 
 from .bins.group import BinGroup
 from .bins.type import BinBitwise, BinOutOfSpec
@@ -223,7 +223,7 @@ class CoverPoint:
             return
 
         if isinstance(value, str):
-            value = BinaryValue(value)
+            value = LogicArray(value)
         self._value = value
 
     def __le__(self, value):
