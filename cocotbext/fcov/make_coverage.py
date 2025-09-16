@@ -2,7 +2,7 @@ import os
 import sys
 import importlib.util
 from argparse import ArgumentParser
-from distutils.spawn import find_executable
+from shutil import which
 
 from cocotbext.fcov import CoverageModel
 from cocotbext.fcov import traverse_type, get_markdown_list
@@ -63,7 +63,7 @@ def main(append=False):
         f.write("".join(md_body))
 
     formatter = "verible-verilog-format"
-    if find_executable(formatter):
+    if which(formatter):
         os.system(f"{formatter} --inplace " + args.sv_output)
 
 
