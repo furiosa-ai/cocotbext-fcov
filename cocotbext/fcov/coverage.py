@@ -605,7 +605,7 @@ class CoverGroup:
         self.set(values=dict(), **kwargs)
 
     async def _sample(self):
-        handler_value = bool(self._sample_handler.value)
+        handler_value = bool(self._sample_handler.value.resolve("zeros"))
 
         while True:
             await self._sample_event.wait()
