@@ -1,36 +1,36 @@
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
 
-[tool.poetry]
+[project]
 name = "cocotbext-fcov"
 version = "0.1.0"
 description = "Cocotb Extension for Functional Coverage"
-authors = [
-    "Youngsik Kim <kaengsik@furiosa.ai>",
-    "Seokho Lee <seokholee@furiosa.ai>",
-    "Minho Kim <minho@furiosa.ai>",
-]
-license = "MIT"
 readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+    { name = "Youngsik Kim", email = "kaengsik@furiosa.ai" },
+    { name = "Seokho Lee", email = "seokholee@furiosa.ai" },
+    { name = "Minho Kim", email = "minho@furiosa.ai" },
+]
+license = { file = "LICENSE" }
 classifiers = [
     "Framework :: cocotb",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
 ]
-packages = [
-    { include = "cocotbext" },
+dependencies = [
+    "cocotb>=1.8,<2.0",
+    "numpy",
+    "pandas",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.8"
-cocotb = "^1.8.1"
-numpy = "*"
-pandas = "*"
-
-[tool.poetry.scripts]
+[project.scripts]
 make_coverage = "cocotbext.fcov.make_coverage:main"
+
+[tool.setuptools.packages.find]
+include = ["cocotbext.fcov*"]
 
 [tool.black]
 line-length = 120
