@@ -13,6 +13,7 @@ from cocotb.triggers import Edge, Event
 from cocotb.binary import BinaryValue
 
 from .bins.group import BinGroup
+from .bins.item import LanguageType
 from .bins.type import BinBitwise, BinOutOfSpec
 
 
@@ -233,6 +234,12 @@ class CoverPoint:
         if self.ref:
             return self.ref._drive(value)
 
+        # BinOutOfSpec cps emit a 1-bit wire (sv_wire) and have no bins to
+        # match against. Skip the value drive so callers can still sample
+        # multi-bit values without triggering a 1-bit Logic conversion error.
+        if self.is_out_of_spec:
+            return
+
         if value is None:
             value = self.value
         if value is not None:
@@ -372,15 +379,32 @@ class Cross:
         coverpoints: Iterable[CoverPoint],
         name: str | None = None,
         group: str | None = None,
+        ignore_bins: Iterable | None = None,
+        illegal_bins: Iterable | None = None,
     ) -> None:
         """
         coverpoints:    coverpoints list to be crossed
         name:           name of cross
         group:          name of covergroup
+        ignore_bins:    list of cross-level ignore_bins clauses. Each clause:
+                          {"name": str, "terms": [(cp, value_spec[, negate=False]), ...]}
+                        value_spec can be:
+                          - str:         emitted as-is inside `binsof(cp) intersect {<spec>}`
+                                         (e.g. "WRAP", "1, 3, 5", "[17:256]")
+                          - list/tuple:  comma-joined inside `{}`
+                          - range:       step-1 → "[start:stop-1]"; otherwise comma-joined
+                          - BinItem/BinGroup with `as_string(LanguageType.SystemVerilog)`:
+                                         that string is used directly (caller-rendered)
+                        Each clause emits:
+                          ignore_bins <name> = binsof(<cp1>) intersect {<v1>} && ... ;
+                        Use negate=True on a term to wrap it in `!(...)`.
+        illegal_bins:   identical schema to ignore_bins, but emitted as `illegal_bins`.
         """
         self.coverpoints = coverpoints
         self.name = name
         self.group = group
+        self.ignore_bins = list(ignore_bins) if ignore_bins else []
+        self.illegal_bins = list(illegal_bins) if illegal_bins else []
 
     def __repr__(self):
         coverpoints = ", ".join(hex(id(cp)) if cp.name is None else cp.name for cp in self.coverpoints)
@@ -404,6 +428,61 @@ class Cross:
         self.name = name
         self.group = group
 
+    def _term_sv(self, term):
+        """Render one (cp, value_spec[, negate]) term as SV select_expression.
+
+        value_spec can be:
+        - str:        used verbatim inside `intersect {...}` (caller-rendered)
+        - int:        single integer value
+        - range:      step==1 → "[start:stop-1]"; otherwise comma-joined
+        - list/tuple/set: each item may itself be int or range; rendered as
+                          comma-joined mix (e.g. {1, 3, [5:7], [9:15]})
+        - object with `as_string(lang=LanguageType.SystemVerilog)`: that
+                          rendered string is used directly
+        """
+        if len(term) == 2:
+            cp, values = term
+            negate = False
+        elif len(term) == 3:
+            cp, values, negate = term
+        else:
+            raise ValueError(f"Cross ignore/illegal_bins term must be 2- or 3-tuple, got {term}")
+
+        cp_name = cp.name if hasattr(cp, "name") else str(cp)
+
+        def _render_one(v):
+            if isinstance(v, range):
+                if v.step == 1 and len(v) > 1:
+                    return f"[{v.start}:{v.stop - 1}]"
+                return ", ".join(str(x) for x in v)
+            return str(v)
+
+        if isinstance(values, str):
+            sv_values = values
+        elif isinstance(values, int):
+            sv_values = str(values)
+        elif isinstance(values, range):
+            sv_values = _render_one(values)
+        elif isinstance(values, (list, tuple, set, frozenset)):
+            sv_values = ", ".join(_render_one(v) for v in values)
+        elif hasattr(values, "as_string"):
+            sv_values = values.as_string(lang=LanguageType.SystemVerilog)
+        else:
+            sv_values = str(values)
+
+        expr = f"binsof({cp_name}) intersect {{{sv_values}}}"
+        return f"!({expr})" if negate else expr
+
+    def _clauses_sv(self):
+        body = []
+        for spec in self.ignore_bins:
+            terms_sv = " && ".join(self._term_sv(t) for t in spec["terms"])
+            body.append(f"ignore_bins {spec['name']} = {terms_sv};")
+        for spec in self.illegal_bins:
+            terms_sv = " && ".join(self._term_sv(t) for t in spec["terms"])
+            body.append(f"illegal_bins {spec['name']} = {terms_sv};")
+        return body
+
     def sv_declare(self):
         cross = {self.name: []}
         for cp in self.coverpoints:
@@ -424,7 +503,15 @@ class Cross:
                 for cx in cross.values():
                     cx.append(cp.name)
 
-        sv_cross = [f"{k}: cross {', '.join(v)};" for k, v in cross.items()]
+        body = self._clauses_sv()
+        sv_cross = []
+        for k, v in cross.items():
+            decl = f"{k}: cross {', '.join(v)}"
+            if body:
+                decl += " {\n  " + "\n  ".join(body) + "\n}"
+            else:
+                decl += ";"
+            sv_cross.append(decl)
         return "\n".join(sv_cross)
 
     def markdown(self, name: str | None = None):
