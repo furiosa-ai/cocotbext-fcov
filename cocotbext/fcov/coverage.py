@@ -10,7 +10,7 @@ from itertools import chain
 import logging
 
 import cocotb
-from cocotb.triggers import Edge, Event
+from cocotb.triggers import ValueChange, Event
 from cocotb.types import LogicArray
 
 from .bins.group import BinGroup
@@ -700,7 +700,7 @@ class CoverGroup:
             while self._sample_values:
                 self._drive(self._sample_values.pop(0))
                 self._sample_handler.value = handler_value = not handler_value
-                await Edge(self._sample_handler)
+                await ValueChange(self._sample_handler)
             self._sample_event.clear()
 
     def sample(self):
