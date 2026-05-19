@@ -693,7 +693,10 @@ class CoverGroup:
         self.set(values=dict(), **kwargs)
 
     async def _sample(self):
-        handler_value = bool(self._sample_handler.value)
+        try:
+            handler_value = bool(self._sample_handler.value)
+        except ValueError:
+            handler_value = False
 
         while True:
             await self._sample_event.wait()
