@@ -7,10 +7,11 @@ from math import prod
 from typing import Any, Dict, Iterable
 from itertools import chain
 
+import logging
+
 import cocotb
-from cocotb.log import SimLog
-from cocotb.triggers import Edge, Event
-from cocotb.binary import BinaryValue
+from cocotb.triggers import ValueChange, Event
+from cocotb.types import LogicArray
 
 from .bins.group import BinGroup
 from .bins.item import LanguageType
@@ -134,7 +135,7 @@ class CoverPoint:
         format:         value format (str). {b, o, d, x, h}
         log_level:      log level in cocotb simulation log
         """
-        self.log = SimLog(f"cocotbext.fcov.{self.__class__.__name__}")
+        self.log = logging.getLogger(f"cocotbext.fcov.{self.__class__.__name__}")
         self.log.setLevel(log_level)
 
         self.prefix = prefix
@@ -224,7 +225,7 @@ class CoverPoint:
             return
 
         if isinstance(value, str):
-            value = BinaryValue(value)
+            value = LogicArray(value)
         self._value = value
 
     def __le__(self, value):
@@ -538,7 +539,7 @@ class CoverGroup:
         """
         self.set_name(name)
 
-        self.log = SimLog(f"cocotbext.fcov.{self.__class__.__name__}")
+        self.log = logging.getLogger(f"cocotbext.fcov.{self.__class__.__name__}")
         self.log.setLevel(log_level)
 
         self._sample_handler = None
@@ -630,7 +631,7 @@ class CoverGroup:
         self._connected_coverpoints = dict(self._traverse_coverpoint(flatten=False))
 
         if self._sample_thread:
-            self._sample_thread.kill()
+            self._sample_thread.cancel()
         self._sample_handler = getattr(coverage_instance, self.sample_name)
         self._sample_thread = cocotb.start_soon(self._sample())
 
@@ -699,7 +700,7 @@ class CoverGroup:
             while self._sample_values:
                 self._drive(self._sample_values.pop(0))
                 self._sample_handler.value = handler_value = not handler_value
-                await Edge(self._sample_handler)
+                await ValueChange(self._sample_handler)
             self._sample_event.clear()
 
     def sample(self):
@@ -788,7 +789,7 @@ class CoverageModel:
         """
         self.set_name(name)
 
-        self.log = SimLog(f"cocotbext.fcov.{self.__class__.__name__}")
+        self.log = logging.getLogger(f"cocotbext.fcov.{self.__class__.__name__}")
         self.log.setLevel(log_level)
 
     def _copy_covergroups(self):
@@ -882,7 +883,7 @@ class CoverageCollector:
         """
         self.dut = dut
 
-        self.log = SimLog(f"cocotbext.fcov.{self.__class__.__name__}")
+        self.log = logging.getLogger(f"cocotbext.fcov.{self.__class__.__name__}")
         self.log.setLevel(log_level)
 
         self.connect_coverage(dut, cov_model)
