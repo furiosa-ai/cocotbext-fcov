@@ -6,6 +6,30 @@ from .item import BinItem
 
 
 class BinGroup:
+    """Ordered named container of :class:`BinItem` instances.
+
+    A ``BinGroup`` is what gets passed to :class:`~cocotbext.fcov.CoverPoint`
+    as the ``bins=`` argument. It accepts a wide variety of constructor
+    inputs and normalises them into ``{name: BinItem}`` form. Subclasses in
+    ``cocotbext.fcov.bins.type`` (``BinSingle``, ``BinUniform``,
+    ``BinRange``, ``BinDict``, ``BinEnum``, ``BinExp``, ``BinMinMax``,
+    ``BinWindow``, ``BinOneHot``, ``BinDefault``, ``BinTransition``, ...)
+    specialise the constructor for one common pattern but share this
+    underlying storage and rendering.
+
+    Equality + hashing are value-based: two ``BinGroup`` instances are
+    equal if their type, width, and bin set are the same. Concatenation
+    (``+``) merges bin dicts.
+
+    Attributes:
+        bins: ``Dict[str, BinItem]`` keyed by bin name; iteration / ``[]``
+            / ``len`` / ``keys`` / ``values`` / ``items`` delegate here.
+        type: Short identifier derived from the class name
+            (e.g. ``Uniform``, ``Range``, ``Custom`` for the base class).
+        width: Effective bit width for SV emission. If unset, derived from
+            the largest absolute value across all bins.
+    """
+
     def __init__(
         self,
         bins: Iterable | None = None,
@@ -13,6 +37,23 @@ class BinGroup:
         prefix: str = "bin",
         format: str | None = None,
     ):
+        """Construct a ``BinGroup`` from a heterogeneous bin spec.
+
+        Args:
+            bins: Source spec. Accepts ``None`` (empty), a ``BinGroup``
+                (copy semantics), a ``dict`` (``{name: value}``), a
+                ``range`` (sugar for one open-array bin), or any iterable
+                whose entries are ``(name, value)`` pairs / ``BinItem``
+                / bare values to be wrapped.
+            width: Optional fixed bit width applied to every contained
+                bin.
+            prefix: Default bin-name prefix for auto-named bins.
+            format: Default integer format (``"b"``/``"o"``/``"d"``/``"h"``)
+                propagated to every contained ``BinItem``.
+
+        Raises:
+            AssertionError: Duplicate bin names in the input spec.
+        """
         self._width = width
         self.prefix = prefix
         self.format = format
@@ -176,6 +217,17 @@ class BinGroup:
         self.update([bin])
 
     def systemverilog(self, format: str | None = None, keyword: str = "bins"):
+        """Render every bin as a ``;``-terminated SystemVerilog clause.
+
+        Args:
+            format: Integer base override.
+            keyword: ``"bins"`` / ``"ignore_bins"`` / ``"illegal_bins"``.
+
+        Returns:
+            Newline-joined string ready to paste inside a ``coverpoint``
+            body. Default bins (``bins others = default``) are sorted to
+            the end of the list as SV requires.
+        """
         if format is None:
             format = self.format
 
@@ -188,6 +240,20 @@ class BinGroup:
         return "\n".join(bin_sv_list)
 
     def markdown(self, format: str | None = None, shorten: bool | None=None, enum=False):
+        """Render every bin as a Markdown spec fragment.
+
+        Args:
+            format: Integer base override.
+            shorten: When True, long lists collapse to ellipsis; ``None``
+                shortens for predefined subtypes and keeps full text for
+                ``BinCustom``.
+            enum: When True, render in ``name(value)`` form (default for
+                enum-shaped subgroups).
+
+        Returns:
+            Comma-joined Markdown string for use in a ``make_coverage``
+            spec table.
+        """
         if format is None:
             format = self.format
         if shorten is None:

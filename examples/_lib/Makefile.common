@@ -1,0 +1,117 @@
+# Shared cocotb pilot Makefile glue — included by every examples/<pilot>/Makefile.
+#
+# Pilot Makefile contract:
+#   PILOT_DIR             = $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
+#   COCOTB_TOPLEVEL       = tb_top                  (typical)
+#   COCOTB_TEST_MODULES   = tb_<pilot>              (the .py module name, no extension)
+#   PILOT_DUT_SOURCES     = $(PILOT_DIR)/<dut>.sv ... (DUT + any helpers; coverage.sv is added automatically)
+#   PILOT_DUT_NAME        = <module name>           (only if needed for SIM-specific flags; otherwise unused)
+#   include $(PILOT_DIR)/../_lib/Makefile.common
+#
+# Per-SIM behaviour:
+#   SIM=verilator (default)  emit + compile + cocotb-side sample() call reach (no func cov — D40)
+#   SIM=vcs                  functional cov via simv.vdb  → `make report` runs urg
+#   SIM=questa               functional cov via cov_*.ucdb → `make report` runs vcover
+
+# ---- BASH_ENV workaround --------------------------------------------------
+# Hosts that set BASH_ENV=/etc/environment globally force every non-interactive
+# bash subshell to re-source that file, which resets PATH and drops EDA tool
+# paths set by stork_dv.env. Clear it before any recursive make is spawned.
+unexport BASH_ENV
+BASH_ENV :=
+export BASH_ENV
+
+# ---- cocotb makefiles -----------------------------------------------------
+COCOTB_MAKEFILES_DIR := $(shell python -c "import cocotb_tools, os; print(os.path.join(os.path.dirname(cocotb_tools.__file__), 'makefiles'))")
+
+# ---- defaults ---------------------------------------------------------------
+SIM ?= verilator
+TOPLEVEL_LANG ?= verilog
+
+# Provide deprecated MODULE/TOPLEVEL aliases so flows that still read them work.
+TOPLEVEL ?= $(COCOTB_TOPLEVEL)
+MODULE   ?= $(COCOTB_TEST_MODULES)
+
+# Final source list: generated coverage.sv + pilot-supplied DUT + tb_top wrapper.
+VERILOG_SOURCES ?= $(PILOT_DIR)/coverage.sv $(PILOT_DUT_SOURCES) $(PILOT_DIR)/tb_top.sv
+
+# Always define the macro that exposes the cov_model.
+COMPILE_ARGS += +define+COCOTBEXT_FCOV
+
+# ---- per-simulator settings ------------------------------------------------
+ifeq ($(SIM),verilator)
+  EXTRA_ARGS   += --timing
+  COMPILE_ARGS += -Wno-COVERIGN -Wno-WIDTHTRUNC -Wno-UNUSEDSIGNAL
+  PATCH_CMD     = python -c "$$PATCH_FOR_VERILATOR"
+else
+  PATCH_CMD     = :
+endif
+
+ifeq ($(SIM),vcs)
+  # `-cm` includes assert which covers covergroup hit data in modern VCS.
+  COMPILE_ARGS += -sverilog -kdb -debug_access+all
+  COMPILE_ARGS += -cm line+cond+fsm+tgl+branch+assert
+  SIM_ARGS     += -cm line+cond+fsm+tgl+branch+assert -cm_dir simv.vdb -cm_name $(notdir $(patsubst %/,%,$(PILOT_DIR)))
+endif
+
+ifeq ($(SIM),questa)
+  COMPILE_ARGS += -coveropt 3 +cover=bcefxs
+  SIM_ARGS     += -coverage
+endif
+
+# ---- coverage.sv post-emit patch -------------------------------------------
+# Verilator 5.038 lacks covergroup `.sample()` — wrap the cocotbext-fcov-emitted
+# always-block in `ifndef VERILATOR. No-op for commercial sims (which implement
+# the method natively).
+define PATCH_FOR_VERILATOR
+import re
+sv = open('coverage.sv').read()
+sv = re.sub(
+    r'(always\s*@\s*\(\s*\w+_sample\s*\)\s*begin\s+\w+_inst\.sample\(\);\s+end)',
+    r'`ifndef VERILATOR\n  \1\n  `endif',
+    sv,
+)
+open('coverage.sv', 'w').write(sv)
+endef
+export PATCH_FOR_VERILATOR
+
+# ---- generated coverage.sv / coverage.md -----------------------------------
+coverage.sv coverage.md: coverage_spec.py
+	make_coverage -f coverage_spec.py -sv coverage.sv -md coverage.md --overwrite
+	$(PATCH_CMD)
+
+# Ensure coverage.sv is generated before the cocotb-driven sim target runs.
+sim: coverage.sv
+
+# ---- coverage report ------------------------------------------------------
+.PHONY: report report-vcs report-questa
+report:
+	@case "$(SIM)" in \
+	  vcs)    $(MAKE) report-vcs ;; \
+	  questa) $(MAKE) report-questa ;; \
+	  *)      echo "report target supported for SIM=vcs|questa only (current SIM=$(SIM))" ;; \
+	esac
+
+report-vcs:
+	urg -dir sim_build/simv.vdb -dir simv.vdb -format text -report urgReport
+	@echo "---"
+	@head -40 urgReport/dashboard.txt 2>/dev/null || echo "(no dashboard)"
+	@echo "---"
+	@head -40 urgReport/grpinfo.txt 2>/dev/null || echo "(no group info)"
+
+report-questa:
+	@first=$$(ls -1 cov_*.ucdb 2>/dev/null | head -1); \
+	  if [ -n "$$first" ]; then \
+	    vcover report -details $$first | tail -40; \
+	  else \
+	    echo "no cov_*.ucdb produced"; \
+	  fi
+
+# ---- clean -----------------------------------------------------------------
+clean::
+	rm -rf sim_build __pycache__ results.xml coverage.sv coverage.md coverage.dat \
+	       simv.vdb covhtmlreport urgReport ucdb cov_html *.ucdb *.log csrc DVEfiles \
+	       transcript vsim.wlf
+
+# ---- cocotb sim glue -------------------------------------------------------
+include $(COCOTB_MAKEFILES_DIR)/Makefile.sim

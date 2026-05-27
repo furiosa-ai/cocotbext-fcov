@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import logging
 import pandas as pd
 from copy import deepcopy, copy
 from math import prod
@@ -8,11 +9,11 @@ from typing import Any, Dict, Iterable
 from itertools import chain
 
 import cocotb
-from cocotb.log import SimLog
-from cocotb.triggers import Edge, Event
-from cocotb.binary import BinaryValue
+from cocotb.triggers import Event
+from cocotb.types import LogicArray
 
 from .bins.group import BinGroup
+from .bins.item import LanguageType
 from .bins.type import BinBitwise, BinOutOfSpec
 
 
@@ -133,7 +134,7 @@ class CoverPoint:
         format:         value format (str). {b, o, d, x, h}
         log_level:      log level in cocotb simulation log
         """
-        self.log = SimLog(f"cocotbext.fcov.{self.__class__.__name__}")
+        self.log = logging.getLogger(f"cocotbext.fcov.{self.__class__.__name__}")
         self.log.setLevel(log_level)
 
         self.prefix = prefix
@@ -223,7 +224,7 @@ class CoverPoint:
             return
 
         if isinstance(value, str):
-            value = BinaryValue(value)
+            value = LogicArray(value)
         self._value = value
 
     def __le__(self, value):
@@ -232,6 +233,12 @@ class CoverPoint:
     def _drive(self, value=None):
         if self.ref:
             return self.ref._drive(value)
+
+        # BinOutOfSpec cps emit a 1-bit wire (sv_wire) and have no bins to
+        # match against. Skip the value drive so callers can still sample
+        # multi-bit values without triggering a 1-bit Logic conversion error.
+        if self.is_out_of_spec:
+            return
 
         if value is None:
             value = self.value
@@ -372,15 +379,32 @@ class Cross:
         coverpoints: Iterable[CoverPoint],
         name: str | None = None,
         group: str | None = None,
+        ignore_bins: Iterable | None = None,
+        illegal_bins: Iterable | None = None,
     ) -> None:
         """
         coverpoints:    coverpoints list to be crossed
         name:           name of cross
         group:          name of covergroup
+        ignore_bins:    list of cross-level ignore_bins clauses. Each clause:
+                          {"name": str, "terms": [(cp, value_spec[, negate=False]), ...]}
+                        value_spec can be:
+                          - str:         emitted as-is inside `binsof(cp) intersect {<spec>}`
+                                         (e.g. "WRAP", "1, 3, 5", "[17:256]")
+                          - list/tuple:  comma-joined inside `{}`
+                          - range:       step-1 → "[start:stop-1]"; otherwise comma-joined
+                          - BinItem/BinGroup with `as_string(LanguageType.SystemVerilog)`:
+                                         that string is used directly (caller-rendered)
+                        Each clause emits:
+                          ignore_bins <name> = binsof(<cp1>) intersect {<v1>} && ... ;
+                        Use negate=True on a term to wrap it in `!(...)`.
+        illegal_bins:   identical schema to ignore_bins, but emitted as `illegal_bins`.
         """
         self.coverpoints = coverpoints
         self.name = name
         self.group = group
+        self.ignore_bins = list(ignore_bins) if ignore_bins else []
+        self.illegal_bins = list(illegal_bins) if illegal_bins else []
 
     def __repr__(self):
         coverpoints = ", ".join(hex(id(cp)) if cp.name is None else cp.name for cp in self.coverpoints)
@@ -404,6 +428,61 @@ class Cross:
         self.name = name
         self.group = group
 
+    def _term_sv(self, term):
+        """Render one (cp, value_spec[, negate]) term as SV select_expression.
+
+        value_spec can be:
+        - str:        used verbatim inside `intersect {...}` (caller-rendered)
+        - int:        single integer value
+        - range:      step==1 → "[start:stop-1]"; otherwise comma-joined
+        - list/tuple/set: each item may itself be int or range; rendered as
+                          comma-joined mix (e.g. {1, 3, [5:7], [9:15]})
+        - object with `as_string(lang=LanguageType.SystemVerilog)`: that
+                          rendered string is used directly
+        """
+        if len(term) == 2:
+            cp, values = term
+            negate = False
+        elif len(term) == 3:
+            cp, values, negate = term
+        else:
+            raise ValueError(f"Cross ignore/illegal_bins term must be 2- or 3-tuple, got {term}")
+
+        cp_name = cp.name if hasattr(cp, "name") else str(cp)
+
+        def _render_one(v):
+            if isinstance(v, range):
+                if v.step == 1 and len(v) > 1:
+                    return f"[{v.start}:{v.stop - 1}]"
+                return ", ".join(str(x) for x in v)
+            return str(v)
+
+        if isinstance(values, str):
+            sv_values = values
+        elif isinstance(values, int):
+            sv_values = str(values)
+        elif isinstance(values, range):
+            sv_values = _render_one(values)
+        elif isinstance(values, (list, tuple, set, frozenset)):
+            sv_values = ", ".join(_render_one(v) for v in values)
+        elif hasattr(values, "as_string"):
+            sv_values = values.as_string(lang=LanguageType.SystemVerilog)
+        else:
+            sv_values = str(values)
+
+        expr = f"binsof({cp_name}) intersect {{{sv_values}}}"
+        return f"!({expr})" if negate else expr
+
+    def _clauses_sv(self):
+        body = []
+        for spec in self.ignore_bins:
+            terms_sv = " && ".join(self._term_sv(t) for t in spec["terms"])
+            body.append(f"ignore_bins {spec['name']} = {terms_sv};")
+        for spec in self.illegal_bins:
+            terms_sv = " && ".join(self._term_sv(t) for t in spec["terms"])
+            body.append(f"illegal_bins {spec['name']} = {terms_sv};")
+        return body
+
     def sv_declare(self):
         cross = {self.name: []}
         for cp in self.coverpoints:
@@ -424,7 +503,15 @@ class Cross:
                 for cx in cross.values():
                     cx.append(cp.name)
 
-        sv_cross = [f"{k}: cross {', '.join(v)};" for k, v in cross.items()]
+        body = self._clauses_sv()
+        sv_cross = []
+        for k, v in cross.items():
+            decl = f"{k}: cross {', '.join(v)}"
+            if body:
+                decl += " {\n  " + "\n  ".join(body) + "\n}"
+            else:
+                decl += ";"
+            sv_cross.append(decl)
         return "\n".join(sv_cross)
 
     def markdown(self, name: str | None = None):
@@ -451,7 +538,7 @@ class CoverGroup:
         """
         self.set_name(name)
 
-        self.log = SimLog(f"cocotbext.fcov.{self.__class__.__name__}")
+        self.log = logging.getLogger(f"cocotbext.fcov.{self.__class__.__name__}")
         self.log.setLevel(log_level)
 
         self._sample_handler = None
@@ -479,9 +566,29 @@ class CoverGroup:
             if v.ref:
                 v.ref = cp_map[id(v.ref)]
 
+        def _remap_clauses(clauses):
+            """Rebind cp references in ignore_bins / illegal_bins clauses.
+
+            Each clause is ``{"name": str, "terms": [(cp, value[, negate]), ...]}``.
+            ``cp_map`` carries old-id -> new-cp; if an old cp isn't in the map
+            (e.g. user passed an external reference), the clause is left alone.
+            """
+            new_clauses = []
+            for clause in clauses:
+                new_terms = []
+                for term in clause.get("terms", ()):
+                    cp = term[0]
+                    rest = term[1:]
+                    new_cp = cp_map.get(id(cp), cp)
+                    new_terms.append((new_cp, *rest))
+                new_clauses.append({**clause, "terms": new_terms})
+            return new_clauses
+
         def copy_cross(cross: Cross):
             new_cross = copy(cross)
             new_cross.coverpoints = type(cross.coverpoints)(cp_map[id(cp)] for cp in cross.coverpoints)
+            new_cross.ignore_bins  = _remap_clauses(cross.ignore_bins)
+            new_cross.illegal_bins = _remap_clauses(cross.illegal_bins)
             return new_cross
 
         for k, v in self._traverse_cross(flatten=False):
@@ -543,7 +650,7 @@ class CoverGroup:
         self._connected_coverpoints = dict(self._traverse_coverpoint(flatten=False))
 
         if self._sample_thread:
-            self._sample_thread.kill()
+            self._sample_thread.cancel()
         self._sample_handler = getattr(coverage_instance, self.sample_name)
         self._sample_thread = cocotb.start_soon(self._sample())
 
@@ -605,14 +712,14 @@ class CoverGroup:
         self.set(values=dict(), **kwargs)
 
     async def _sample(self):
-        handler_value = bool(self._sample_handler.value)
+        handler_value = bool(self._sample_handler.value.resolve("zeros"))
 
         while True:
             await self._sample_event.wait()
             while self._sample_values:
                 self._drive(self._sample_values.pop(0))
                 self._sample_handler.value = handler_value = not handler_value
-                await Edge(self._sample_handler)
+                await self._sample_handler.value_change
             self._sample_event.clear()
 
     def sample(self):
@@ -701,7 +808,7 @@ class CoverageModel:
         """
         self.set_name(name)
 
-        self.log = SimLog(f"cocotbext.fcov.{self.__class__.__name__}")
+        self.log = logging.getLogger(f"cocotbext.fcov.{self.__class__.__name__}")
         self.log.setLevel(log_level)
 
     def _copy_covergroups(self):
@@ -795,7 +902,7 @@ class CoverageCollector:
         """
         self.dut = dut
 
-        self.log = SimLog(f"cocotbext.fcov.{self.__class__.__name__}")
+        self.log = logging.getLogger(f"cocotbext.fcov.{self.__class__.__name__}")
         self.log.setLevel(log_level)
 
         self.connect_coverage(dut, cov_model)

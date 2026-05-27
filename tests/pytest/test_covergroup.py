@@ -1,9 +1,13 @@
+import copy
+
 from cocotbext.fcov import CoverPoint, Cross, CoverGroup
 from cocotbext.fcov import (
     BinSingle,
     BinUniform,
     BinOneHot,
     BinBitwise,
+    BinBool,
+    BinRange,
 )
 
 
@@ -204,3 +208,65 @@ def test_inheritance(width=4):
     assert cg_test1 == cg_test2
     assert cg_test1 == cg_test3
     assert cg_test2 == cg_test2
+
+
+# ---------------------------------------------------------------------------
+# Deepcopy regression for Cross.ignore_bins / illegal_bins clause cp refs
+# (commit 769533f -- _remap_clauses inside CoverGroup._copy_coverpoints)
+# Single-instance test would accidentally pass because the class-level cp
+# name eventually gets set by the last instance's set_name. The TWO
+# instances + identity checks are what actually pin the per-__new__ remap.
+# ---------------------------------------------------------------------------
+
+
+def test_covergroup_deepcopy_remaps_cross_clause_cp_refs():
+    class CrossClauseCG(CoverGroup):
+        cp_op = CoverPoint(BinRange(4))
+        cp_z = CoverPoint(BinBool())
+        cx = Cross(
+            [cp_op, cp_z],
+            ignore_bins=[{"name": "ig", "terms": [(cp_op, 2), (cp_z, 1)]}],
+            illegal_bins=[{"name": "il", "terms": [(cp_op, 3, True)]}],
+        )
+
+    cg1 = CrossClauseCG(name="cg_test1")
+    cg2 = CrossClauseCG(name="cg_test2")
+
+    # Each instance's clause refs must be the *instance's own* cp copies,
+    # not the class-level originals and not the other instance's copies.
+    ig1_cp_op = cg1.cx.ignore_bins[0]["terms"][0][0]
+    ig1_cp_z = cg1.cx.ignore_bins[0]["terms"][1][0]
+    il1_cp_op = cg1.cx.illegal_bins[0]["terms"][0][0]
+    assert ig1_cp_op is cg1.cp_op
+    assert ig1_cp_z is cg1.cp_z
+    assert il1_cp_op is cg1.cp_op
+    assert ig1_cp_op is not CrossClauseCG.cp_op
+    assert ig1_cp_op is not cg2.cp_op
+
+    ig2_cp_op = cg2.cx.ignore_bins[0]["terms"][0][0]
+    assert ig2_cp_op is cg2.cp_op
+    assert ig2_cp_op is not cg1.cp_op
+
+    # Clause dicts themselves are per-instance copies -- mutating cg1's
+    # clause must not leak into cg2.
+    assert cg1.cx.ignore_bins[0] is not cg2.cx.ignore_bins[0]
+    cg1.cx.ignore_bins[0]["name"] = "ig_mutated"
+    assert cg2.cx.ignore_bins[0]["name"] == "ig"
+
+    # SV emit on each instance carries the instance's group-prefixed cp
+    # names and never `binsof(None)` (the failure signature pre-769533f).
+    sv1 = cg1.cx.sv_declare()
+    sv2 = cg2.cx.sv_declare()
+    assert "binsof(None)" not in sv1
+    assert "binsof(None)" not in sv2
+    assert "ignore_bins ig_mutated = " in sv1
+    assert "ignore_bins ig = " in sv2
+
+    # copy.deepcopy(cg) path (used by CoverageModel for repeated instances)
+    # also remaps -- distinct CG.__deepcopy__ entry point at coverage.py:602.
+    cg3 = copy.deepcopy(cg2)
+    cg3.set_name("cg_test3")
+    ig3_cp_op = cg3.cx.ignore_bins[0]["terms"][0][0]
+    assert ig3_cp_op is cg3.cp_op
+    assert ig3_cp_op is not cg2.cp_op
+    assert "binsof(None)" not in cg3.cx.sv_declare()
