@@ -5,6 +5,12 @@ from enum import Enum, IntEnum
 
 
 class LanguageType(IntEnum):
+    """Target output language for `as_string` / `systemverilog` rendering.
+
+    ``Default`` renders human-readable Python-flavoured strings; ``SystemVerilog``
+    renders strings that fit inside a `bins ... = {...};` clause.
+    """
+
     Default = 0
     SystemVerilog = 1
 
@@ -13,6 +19,33 @@ class LanguageType(IntEnum):
 # TODO: auto contraction to range
 # TODO: handle overlap value
 class BinItem:
+    """A single named bin: one or more values, ranges, or a transition chain.
+
+    A bin item is the atomic unit of coverage in this library. Each item holds
+    either a value-list (ints / ranges / lists, all flattened to a sorted set)
+    or a transition chain (each link is itself a ``BinItem``, threaded through
+    the ``next`` attribute).
+
+    The same instance can render itself as a Python-flavoured string, as a
+    SystemVerilog ``bins ...`` clause, or as a Markdown fragment. The rendered
+    form is driven by ``items`` + ``next`` + ``num`` + ``width`` + ``format``;
+    do not subclass to specialise rendering -- pass a different `BinGroup`
+    instead.
+
+    Attributes:
+        items: Normalised value list. ints, ``range``, or ``BinItem`` (when the
+            item carries a transition chain). Set via the property; the setter
+            validates that all entries are uniform (all values OR all
+            transitions).
+        next: Next link in a transition chain, or ``None`` for a value bin.
+        name: Bin label used in ``bins <name> = {...};``. If unset, derived
+            from ``min`` / ``max`` via :meth:`suggest_name`.
+        num: SystemVerilog array size: ``0`` = open ``[]``, ``1`` = scalar, ``N``
+            = sized ``[N]``.
+        prefix: Default prefix when auto-suggesting a name (e.g. ``"bin"``).
+        format: Default integer format (``"b"`` / ``"o"`` / ``"d"`` / ``"h"``).
+    """
+
     def __init__(
         self,
         items=None,
@@ -308,6 +341,13 @@ class BinItem:
         return rhs
 
     def suggest_name(self, prefix: str | None = None, seperator="_", format: str | None = None):
+        """Synthesise a name from this bin's min/max values.
+
+        Returns:
+            ``"others"`` when ``items`` is empty (default bin); the Enum
+            member name when items is a single ``Enum``; otherwise
+            ``{prefix}_{min}_{max}`` with negatives rewritten as ``neg``.
+        """
         if prefix is None:
             prefix = self.prefix
 
@@ -391,6 +431,21 @@ class BinItem:
         seperator: str = ",",
         shorten=False,
     ):
+        """Render this bin's value set as a single string.
+
+        Args:
+            lang: ``Default`` for Python-flavoured output; ``SystemVerilog``
+                for ``[a:b]`` style range rendering inside ``{...}``.
+            format: Integer base override (``"b"`` / ``"o"`` / ``"d"`` /
+                ``"h"``). When ``None``, uses :attr:`format`.
+            seperator: Joiner between values (default ``","``).
+            shorten: When True, sets > 6 entries collapse to
+                ``a, b, c, ..., y, z``.
+
+        Returns:
+            ``"default"`` for default bins; otherwise the joined value list,
+            with ``" => "`` chained tail for transition bins.
+        """
         if self.is_default():
             return "default"
         if len(self.items) == 1 and self._is_type_range_with_step(self.items[0]) and lang == LanguageType.Default:
@@ -409,6 +464,20 @@ class BinItem:
         return res
 
     def systemverilog(self, format: str | None = None, keyword: str = "bins"):
+        """Render as a single SystemVerilog ``<keyword> <name> = ...`` clause.
+
+        Args:
+            format: Integer base override; ``None`` uses :attr:`format`.
+            keyword: One of ``"bins"`` / ``"ignore_bins"`` / ``"illegal_bins"``.
+
+        Returns:
+            A clause without the trailing semicolon, e.g.
+            ``bins bin_0_9 = {[0:9]}`` or
+            ``bins bin_arr[4] = {1, 3, 5, 7}``.
+
+        Raises:
+            AssertionError: ``keyword`` not in the allowed set.
+        """
         assert keyword in [
             "bins",
             "ignore_bins",
@@ -434,6 +503,18 @@ class BinItem:
             return f"{keyword} {self.name}[{self.num}] = {sv_items}"
 
     def markdown(self, format: str | None = None, shorten=True, enum=False):
+        """Render as a Markdown coverage-spec fragment.
+
+        Args:
+            format: Integer base override.
+            shorten: When True, long value lists collapse to ellipsis.
+            enum: When True, prefix the rendered values with the bin name
+                in ``name(values)`` form (used by enum bins).
+
+        Returns:
+            A short Markdown-safe string for use in a ``make_coverage`` spec
+            table row.
+        """
         if len(self.items) == 1 and self._is_type_range_with_step(self.items[0]):
             flatten = len(self.items[0]) == self.num
             is_multiple = len(self.items[0]) > 1 and not flatten
