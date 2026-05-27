@@ -566,9 +566,29 @@ class CoverGroup:
             if v.ref:
                 v.ref = cp_map[id(v.ref)]
 
+        def _remap_clauses(clauses):
+            """Rebind cp references in ignore_bins / illegal_bins clauses.
+
+            Each clause is ``{"name": str, "terms": [(cp, value[, negate]), ...]}``.
+            ``cp_map`` carries old-id -> new-cp; if an old cp isn't in the map
+            (e.g. user passed an external reference), the clause is left alone.
+            """
+            new_clauses = []
+            for clause in clauses:
+                new_terms = []
+                for term in clause.get("terms", ()):
+                    cp = term[0]
+                    rest = term[1:]
+                    new_cp = cp_map.get(id(cp), cp)
+                    new_terms.append((new_cp, *rest))
+                new_clauses.append({**clause, "terms": new_terms})
+            return new_clauses
+
         def copy_cross(cross: Cross):
             new_cross = copy(cross)
             new_cross.coverpoints = type(cross.coverpoints)(cp_map[id(cp)] for cp in cross.coverpoints)
+            new_cross.ignore_bins  = _remap_clauses(cross.ignore_bins)
+            new_cross.illegal_bins = _remap_clauses(cross.illegal_bins)
             return new_cross
 
         for k, v in self._traverse_cross(flatten=False):
