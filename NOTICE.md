@@ -8,9 +8,9 @@ license, identified by the file's `SPDX-License-Identifier` header.
 
 | File in this repo | Original location | License |
 |-------------------|-------------------|---------|
-| `tests/cocotb/simple_dff/dff.sv` | https://github.com/cocotb/cocotb/blob/master/examples/simple_dff/dff.sv | CC0-1.0 |
-| `tests/cocotb/adder/adder.sv` | https://github.com/cocotb/cocotb/blob/master/examples/adder/hdl/adder.sv | CC0-1.0 |
-| `tests/cocotb/matrix_multiplier/matrix_multiplier.sv` | https://github.com/cocotb/cocotb/blob/master/examples/matrix_multiplier/hdl/matrix_multiplier.sv | CC0-1.0 |
+| `examples/simple_dff/dff.sv` | https://github.com/cocotb/cocotb/blob/master/examples/simple_dff/dff.sv | CC0-1.0 |
+| `examples/adder/adder.sv` | https://github.com/cocotb/cocotb/blob/master/examples/adder/hdl/adder.sv | CC0-1.0 |
+| `examples/matrix_multiplier/matrix_multiplier.sv` | https://github.com/cocotb/cocotb/blob/master/examples/matrix_multiplier/hdl/matrix_multiplier.sv | CC0-1.0 |
 
 Public-domain dedication; reproduced verbatim. No additional notice required
 by the dedication itself, but the SPDX header on the file makes provenance

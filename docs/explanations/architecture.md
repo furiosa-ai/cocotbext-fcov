@@ -90,12 +90,12 @@ normally and the simulator records bin hits.
 
 | Pilot | Layer focus |
 |---|---|
-| `tests/cocotb/simple_dff/` | `BinBool` + `BinTransition` on a 1-bit register's `Q` — the smallest pilot; proves the chain is wired. |
-| `tests/cocotb/simple_counter/` | `BinRange` + `BinBool` + `Cross` — first multi-coverpoint pilot. |
-| `tests/cocotb/adder/` | `BinUniform` + `BinBitwise` + `BinBool` + `Cross` — `ref=` (multi-axis on one wire). |
-| `tests/cocotb/register_sampling/` | 6 Bin\* + Cross — register-file domain spread. |
-| `tests/cocotb/opcode_cross/` | `BinEnum` + `BinExp` + `BinOneHot` + Cross + ignore/illegal_bins. |
-| `tests/cocotb/matrix_multiplier/` | `BinUniform` + `BinMinMaxExp` (combined) + `BinMinMax` — range / magnitude patterns. |
+| `examples/simple_dff/` | `BinBool` + `BinTransition` on a 1-bit register's `Q` — the smallest pilot; proves the chain is wired. |
+| `examples/simple_counter/` | `BinRange` + `BinBool` + `Cross` — first multi-coverpoint pilot. |
+| `examples/adder/` | `BinUniform` + `BinBitwise` + `BinBool` + `Cross` — `ref=` (multi-axis on one wire). |
+| `examples/register_sampling/` | 6 Bin\* + Cross — register-file domain spread. |
+| `examples/opcode_cross/` | `BinEnum` + `BinExp` + `BinOneHot` + Cross + ignore/illegal_bins. |
+| `examples/matrix_multiplier/` | `BinUniform` + `BinMinMaxExp` (combined) + `BinMinMax` — range / magnitude patterns. |
 
 ## When this model breaks down
 
@@ -118,5 +118,5 @@ normally and the simulator records bin hits.
   / `CoverGroup` / `CoverageModel` / `CoverageCollector`.
 - [`bin-type-hierarchy.md`](bin-type-hierarchy.md) — the inheritance tree
   *within* the `Bin*` family (orthogonal to this page's chain view).
-- [`../../tests/cocotb/README.md`](../../tests/cocotb/README.md) — how the
+- [`../../examples/README.md`](../../examples/README.md) — how the
   pilots map onto this chain.

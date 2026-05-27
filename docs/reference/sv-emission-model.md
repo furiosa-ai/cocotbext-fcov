@@ -123,14 +123,14 @@ cg.sample()
 ```
 
 See [`coverage/model.md`](coverage/model.md) and the pilot READMEs
-([`simple_dff`](../../tests/cocotb/simple_dff/),
-[`adder`](../../tests/cocotb/adder/),
-[`opcode_cross`](../../tests/cocotb/opcode_cross/)) for end-to-end
+([`simple_dff`](../../examples/simple_dff/),
+[`adder`](../../examples/adder/),
+[`opcode_cross`](../../examples/opcode_cross/)) for end-to-end
 worked examples.
 
 ## Verilator-specific patch
 
-`tests/cocotb/_lib/Makefile.common` ships a regex post-emit step that
+`examples/_lib/Makefile.common` ships a regex post-emit step that
 turns
 
 ```sv
@@ -155,4 +155,4 @@ minimal-impact workaround until that lands.
 - [`scripts/make-coverage.md`](scripts/make-coverage.md) — CLI that produces this file.
 - [`coverage/model.md`](coverage/model.md) — Python source of the module body.
 - [`../explanations/architecture.md`](../explanations/architecture.md) — full Python → SV → simulator data flow.
-- [`../../tests/cocotb/simple_dff/`](../../tests/cocotb/simple_dff/) — smallest pilot; the simplest emit + run worth keeping.
+- [`../../examples/simple_dff/`](../../examples/simple_dff/) — smallest pilot; the simplest emit + run worth keeping.

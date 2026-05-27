@@ -1,6 +1,6 @@
 # matrix_multiplier — magnitude / range Bin\* showcase
 
-Paired guide: [`docs/how-to/bin-type-recipes.md`](../../../docs/how-to/bin-type-recipes.md)
+Paired guide: [`docs/how-to/bin-type-recipes.md`](../../docs/how-to/bin-type-recipes.md)
 
 ## Proves / Does NOT prove
 
@@ -96,7 +96,7 @@ naturally does).
 
 | File | Role |
 |------|------|
-| `matrix_multiplier.sv` | DUT, vendored cocotb upstream (CC0; see [`NOTICE.md`](../../../NOTICE.md)) |
+| `matrix_multiplier.sv` | DUT, vendored cocotb upstream (CC0; see [`NOTICE.md`](../../NOTICE.md)) |
 | `coverage_spec.py` | 5 cps + 1 cross — hybrid `_hybrid_4bit()` on cp_a0/cp_b0, `BinMinMax`/`BinMinMaxExp` on cp_c0 via ref= |
 | `coverage.sv` (committed) | `make_coverage` snapshot |
 | `tb_top.sv` | SV wrapper, instantiates matrix_multiplier with reduced params (2×2 × 2×2, 4-bit elements) |
@@ -122,5 +122,5 @@ second.
 - [`../README.md`](../README.md) — pilot conventions + marker meanings.
 - [`../adder/`](../adder/) — earlier `ref=` example (BinUniform + BinBitwise).
 - [`../opcode_cross/`](../opcode_cross/) — Cross + ignore/illegal pilot.
-- [`../../../docs/explanations/architecture.md`](../../../docs/explanations/architecture.md) — coverage class hierarchy.
-- [`../../../docs/glossary.md`](../../../docs/glossary.md) — term definitions.
+- [`../../docs/explanations/architecture.md`](../../docs/explanations/architecture.md) — coverage class hierarchy.
+- [`../../docs/glossary.md`](../../docs/glossary.md) — term definitions.

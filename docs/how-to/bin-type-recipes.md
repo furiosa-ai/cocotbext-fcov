@@ -101,7 +101,7 @@ For *two coverpoints sharing one signal*, use `ref=` instead — see
 
 > Verified: [`tests/pytest/test_bin_type.py`](../../tests/pytest/test_bin_type.py) · [`tests/pytest/test_bin_emit_snapshots.py`](../../tests/pytest/test_bin_emit_snapshots.py)
 >
-> Verified (sim-hit): [`tests/cocotb/matrix_multiplier/`](../../tests/cocotb/matrix_multiplier/) — paired pilot exercising `BinUniform` + `BinMinMaxExp` + `BinMinMax` (including the `BinGroup.__add__` hybrid pattern) on a 2×2 matrix multiplier DUT.
+> Verified (sim-hit): [`examples/matrix_multiplier/`](../../examples/matrix_multiplier/) — paired pilot exercising `BinUniform` + `BinMinMaxExp` + `BinMinMax` (including the `BinGroup.__add__` hybrid pattern) on a 2×2 matrix multiplier DUT.
 
 ## When the predefined patterns don't fit
 

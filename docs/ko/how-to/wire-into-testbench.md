@@ -44,7 +44,7 @@ make_coverage -f coverage_spec.py -sv coverage.sv -md coverage.md --overwrite
 
 출력은 `` `ifdef COCOTBEXT_FCOV `` 로 gate — compile 시
 `+define+COCOTBEXT_FCOV` 전달. Pilot 의
-[`Makefile.common`](../../../tests/cocotb/_lib/Makefile.common) 이 자동
+[`Makefile.common`](../../../examples/_lib/Makefile.common) 이 자동
 처리.
 
 ## Step 2 — SV testbench wrapper
@@ -66,7 +66,7 @@ module tb_top();
 endmodule
 ```
 
-> Verified (sim-hit): [`tests/cocotb/register_sampling/tb_top.sv`](../../../tests/cocotb/register_sampling/tb_top.sv)
+> Verified (sim-hit): [`examples/register_sampling/tb_top.sv`](../../../examples/register_sampling/tb_top.sv)
 
 ## Step 3 — cocotb collector
 
@@ -95,7 +95,7 @@ SV 측 instance 가 성공적으로 resolve 되면 collector 가
 cov_model does not exist in dut!` 가 보이면 — SV instance 이름이
 model 이름과 다름. Step 2 확인.
 
-> Verified (sim-hit): [`tests/cocotb/register_sampling/tb_regfile.py`](../../../tests/cocotb/register_sampling/tb_regfile.py)
+> Verified (sim-hit): [`examples/register_sampling/tb_regfile.py`](../../../examples/register_sampling/tb_regfile.py)
 
 ## Step 4 — 다중 model testbench
 
@@ -131,7 +131,7 @@ collector = TopCollector(
 | **VCS** | ✓ `-cm assert+...` | ✓ | ✓ `simv.vdb` → `urg` |
 | **Questa** | ✓ `+cover=bcefxs` | ✓ `-coverage` | ✓ `cov_*.ucdb` → `vcover` |
 
-`tests/cocotb/_lib/Makefile.common` 이 `SIM=verilator/vcs/questa` 에
+`examples/_lib/Makefile.common` 이 `SIM=verilator/vcs/questa` 에
 따라 자동 flag + patch 적용.
 
 ## 흔한 실패 mode
@@ -150,6 +150,6 @@ collector = TopCollector(
 - [`sampling-in-cocotb.md`](sampling-in-cocotb.md) — wiring 이후 sample loop.
 - [`../../reference/sv-emission-model.md`](../../reference/sv-emission-model.md) — `make_coverage` 가 emit 하는 정확한 module shape.
 - [`../../reference/coverage/model.md`](../../reference/coverage/model.md) — `CoverageModel` + `CoverageCollector` API.
-- [`../../tests/cocotb/README.md`](../../../tests/cocotb/README.md) — pilot 관례; 모든 pilot 가 본 how-to 의 worked example.
+- [`../../examples/README.md`](../../../examples/README.md) — pilot 관례; 모든 pilot 가 본 how-to 의 worked example.
 - [`../glossary.md`](../glossary.md) — 용어 정의.
 - [`../../how-to/wire-into-testbench.md`](../../how-to/wire-into-testbench.md) — English 원본.

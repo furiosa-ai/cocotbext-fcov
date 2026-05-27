@@ -96,7 +96,7 @@ cp_a = CoverPoint(
 
 > Verified: [`tests/pytest/test_bin_type.py`](../../../tests/pytest/test_bin_type.py) · [`tests/pytest/test_bin_emit_snapshots.py`](../../../tests/pytest/test_bin_emit_snapshots.py)
 >
-> Verified (sim-hit): [`tests/cocotb/matrix_multiplier/`](../../../tests/cocotb/matrix_multiplier/) — `BinUniform` + `BinMinMaxExp` + `BinMinMax` ( `BinGroup.__add__` hybrid 포함 ) 를 2×2 matrix multiplier DUT 에서 검증.
+> Verified (sim-hit): [`examples/matrix_multiplier/`](../../../examples/matrix_multiplier/) — `BinUniform` + `BinMinMaxExp` + `BinMinMax` ( `BinGroup.__add__` hybrid 포함 ) 를 2×2 matrix multiplier DUT 에서 검증.
 
 ## Predefined 패턴이 안 맞으면
 

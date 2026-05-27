@@ -1,6 +1,6 @@
 # register_sampling — Bin\* variety pilot
 
-Paired guide: [`docs/how-to/wire-into-testbench.md`](../../../docs/how-to/wire-into-testbench.md)
+Paired guide: [`docs/how-to/wire-into-testbench.md`](../../docs/how-to/wire-into-testbench.md)
 
 ## Proves / Does NOT prove
 
@@ -100,4 +100,4 @@ The tape covers the matrix deliberately:
 
 - [`../README.md`](../README.md) — pilot conventions + marker meanings.
 - [`../adder/`](../adder/) — single-cp ref= pattern (one wire, multiple axes).
-- [`../../../docs/explanations/architecture.md`](../../../docs/explanations/architecture.md) — coverage class hierarchy.
+- [`../../docs/explanations/architecture.md`](../../docs/explanations/architecture.md) — coverage class hierarchy.

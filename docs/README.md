@@ -23,7 +23,7 @@ Functional-coverage closure helpers for cocotb testbenches. Spec coverage models
 - [`tutorials/`](tutorials/) — handheld walks; concrete deliverable at the end.
 - [`explanations/`](explanations/) — conceptual orientation: class hierarchy ([`architecture.md`](explanations/architecture.md)) + Bin\* type tree.
 - [`glossary.md`](glossary.md) — 12 term cross-reference.
-- [`../tests/cocotb/`](../tests/cocotb/) — executable pilots (Verilator + VCS + Questa) bound to the how-to guides.
+- [`../examples/`](../examples/) — executable pilots (Verilator + VCS + Questa) bound to the how-to guides.
 - [`../NOTICE.md`](../NOTICE.md) — third-party attribution.
 - [`ko/`](ko/) — Korean mirror (how-to + tutorial + explanations + glossary).
 

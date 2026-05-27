@@ -94,12 +94,12 @@ SV runtime 사이의 다리. Verilator 에서는 이 블록을 `ifndef VERILATOR
 
 | Pilot | Layer focus |
 |---|---|
-| `tests/cocotb/simple_dff/` | `BinBool` + `BinTransition` on a 1-bit Q — 가장 작은 pilot; chain wiring 검증. |
-| `tests/cocotb/simple_counter/` | `BinRange` + `BinBool` + `Cross` — 첫 multi-coverpoint pilot. |
-| `tests/cocotb/adder/` | `BinUniform` + `BinBitwise` + `BinBool` + `Cross` — `ref=` (한 wire 의 multi-axis). |
-| `tests/cocotb/register_sampling/` | 6 Bin\* + Cross — register-file domain spread. |
-| `tests/cocotb/opcode_cross/` | `BinEnum` + `BinExp` + `BinOneHot` + Cross + ignore/illegal_bins. |
-| `tests/cocotb/matrix_multiplier/` | `BinUniform` + `BinMinMaxExp` (조합) + `BinMinMax` — range / magnitude 패턴. |
+| `examples/simple_dff/` | `BinBool` + `BinTransition` on a 1-bit Q — 가장 작은 pilot; chain wiring 검증. |
+| `examples/simple_counter/` | `BinRange` + `BinBool` + `Cross` — 첫 multi-coverpoint pilot. |
+| `examples/adder/` | `BinUniform` + `BinBitwise` + `BinBool` + `Cross` — `ref=` (한 wire 의 multi-axis). |
+| `examples/register_sampling/` | 6 Bin\* + Cross — register-file domain spread. |
+| `examples/opcode_cross/` | `BinEnum` + `BinExp` + `BinOneHot` + Cross + ignore/illegal_bins. |
+| `examples/matrix_multiplier/` | `BinUniform` + `BinMinMaxExp` (조합) + `BinMinMax` — range / magnitude 패턴. |
 
 ## 이 mental model 이 깨지는 경계
 
@@ -122,6 +122,6 @@ SV runtime 사이의 다리. Verilator 에서는 이 블록을 `ifndef VERILATOR
   `Cross` / `CoverGroup` / `CoverageModel` / `CoverageCollector`.
 - [`bin-type-hierarchy.md`](bin-type-hierarchy.md) — `Bin*` family 내부
   상속 tree (이 페이지의 chain view 와 orthogonal).
-- [`../../tests/cocotb/README.md`](../../../tests/cocotb/README.md) —
+- [`../../examples/README.md`](../../../examples/README.md) —
   pilot 이 이 chain 에 어떻게 매핑되는가.
 - [`../../explanations/architecture.md`](../../explanations/architecture.md) — English 원본.

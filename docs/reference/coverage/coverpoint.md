@@ -123,7 +123,7 @@ covergroup cg ;
 endgroup
 ```
 
-> Verified (sim-hit): [`tests/cocotb/adder/coverage_spec.py`](../../../tests/cocotb/adder/coverage_spec.py) (BinUniform + BinBitwise on operand A via ref=)
+> Verified (sim-hit): [`examples/adder/coverage_spec.py`](../../../examples/adder/coverage_spec.py) (BinUniform + BinBitwise on operand A via ref=)
 
 ### `BinOutOfSpec` skips the value drive
 

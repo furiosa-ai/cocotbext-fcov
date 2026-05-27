@@ -79,7 +79,7 @@ cp_a_exp     = CoverPoint(BinExp(16, base=2))
 cp_a_bitwise = CoverPoint(BinBitwise(4), ref=cp_a_exp)
 ```
 
-> Verified (sim-emit): [`tests/cocotb/adder/coverage_spec.py`](../../../tests/cocotb/adder/coverage_spec.py)
+> Verified (sim-emit): [`examples/adder/coverage_spec.py`](../../../examples/adder/coverage_spec.py)
 
 ## Step 4 — 조합: `Cross`
 
@@ -99,7 +99,7 @@ Cross([cp_op, cp_zero],
                     "terms": [(cp_op, int(Op.AND)), (cp_zero, 1)]}])
 ```
 
-> Verified (sim-emit): [`tests/cocotb/opcode_cross/coverage_spec.py`](../../../tests/cocotb/opcode_cross/coverage_spec.py)
+> Verified (sim-emit): [`examples/opcode_cross/coverage_spec.py`](../../../examples/opcode_cross/coverage_spec.py)
 
 ## Step 5 — Group: `CoverGroup`
 
@@ -117,7 +117,7 @@ class RegfileCoverGroup(CoverGroup):
 Per-instance hit count 는 독립적 — 같은 `CoverGroup` 서브클래스의
 `cg_chan0` 과 `cg_chan1` 이 별도 hit bucket 추적.
 
-> Verified (sim-hit): [`tests/cocotb/register_sampling/coverage_spec.py`](../../../tests/cocotb/register_sampling/coverage_spec.py)
+> Verified (sim-hit): [`examples/register_sampling/coverage_spec.py`](../../../examples/register_sampling/coverage_spec.py)
 
 ## Step 6 — Module: `CoverageModel`
 
@@ -135,7 +135,7 @@ cov_model = RegfileCovModel(name="cov_model")
 Module-level `cov_model` instance 가 `make_coverage` 가 파일을 walk
 할 때 찾는 대상.
 
-> Verified (sim-hit): [`tests/cocotb/register_sampling/coverage_spec.py`](../../../tests/cocotb/register_sampling/coverage_spec.py)
+> Verified (sim-hit): [`examples/register_sampling/coverage_spec.py`](../../../examples/register_sampling/coverage_spec.py)
 
 ## 언제 여러 model 로 split 하나
 

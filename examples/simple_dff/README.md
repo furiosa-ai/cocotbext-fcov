@@ -1,6 +1,6 @@
 # simple_dff — first coverage pilot
 
-Paired guide: [`docs/tutorials/first-coverage-model.md`](../../../docs/tutorials/first-coverage-model.md)
+Paired guide: [`docs/tutorials/first-coverage-model.md`](../../docs/tutorials/first-coverage-model.md)
 
 ## Proves / Does NOT prove
 
@@ -61,7 +61,7 @@ target bins:
 
 | File | Role |
 |------|------|
-| `dff.sv` | DUT, vendored verbatim from cocotb upstream (CC0; see [`NOTICE.md`](../../../NOTICE.md)) |
+| `dff.sv` | DUT, vendored verbatim from cocotb upstream (CC0; see [`NOTICE.md`](../../NOTICE.md)) |
 | `coverage_spec.py` | `DffCovModel` → `DffCoverGroup` with `cp_q` (BinBool) + `cp_q_trans` (inline transitions) |
 | `tb_top.sv` | SV wrapper — instantiates `dff` and `cov_model` |
 | `tb_dff.py` | cocotb test — clock + d-toggling + sample loop |
@@ -73,4 +73,4 @@ target bins:
 
 - [`../README.md`](../README.md) — pilot conventions + marker meanings.
 - [`../README.md`](../README.md) — pilot index + multi-simulator policy.
-- [`../../../docs/explanations/architecture.md`](../../../docs/explanations/architecture.md) — coverage class hierarchy.
+- [`../../docs/explanations/architecture.md`](../../docs/explanations/architecture.md) — coverage class hierarchy.

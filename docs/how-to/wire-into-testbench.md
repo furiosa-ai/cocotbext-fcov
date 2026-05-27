@@ -45,7 +45,7 @@ make_coverage -f coverage_spec.py -sv coverage.sv -md coverage.md --overwrite
 
 The output is gated behind `` `ifdef COCOTBEXT_FCOV `` — pass
 `+define+COCOTBEXT_FCOV` at compile time. The pilots'
-[`Makefile.common`](../../tests/cocotb/_lib/Makefile.common) does
+[`Makefile.common`](../../examples/_lib/Makefile.common) does
 this automatically.
 
 ## Step 2 — SV testbench wrapper
@@ -67,7 +67,7 @@ module tb_top();
 endmodule
 ```
 
-> Verified (sim-hit): [`tests/cocotb/register_sampling/tb_top.sv`](../../tests/cocotb/register_sampling/tb_top.sv)
+> Verified (sim-hit): [`examples/register_sampling/tb_top.sv`](../../examples/register_sampling/tb_top.sv)
 
 ## Step 3 — cocotb collector
 
@@ -96,7 +96,7 @@ successfully resolves the SV-side instance. If you see
 `Coverage instance cov_model does not exist in dut!` — the SV
 instance name doesn't match the model name; check Step 2.
 
-> Verified (sim-hit): [`tests/cocotb/register_sampling/tb_regfile.py`](../../tests/cocotb/register_sampling/tb_regfile.py)
+> Verified (sim-hit): [`examples/register_sampling/tb_regfile.py`](../../examples/register_sampling/tb_regfile.py)
 
 ## Step 4 — Multi-model testbenches
 
@@ -133,7 +133,7 @@ Each model becomes accessible on the collector by its dict key:
 | **VCS** | ✓ with `-cm assert+...` | ✓ | ✓ via `simv.vdb` → `urg` |
 | **Questa** | ✓ with `+cover=bcefxs` | ✓ with `-coverage` | ✓ via `cov_*.ucdb` → `vcover` |
 
-`tests/cocotb/_lib/Makefile.common` switches on `SIM=verilator/vcs/questa`
+`examples/_lib/Makefile.common` switches on `SIM=verilator/vcs/questa`
 and applies the right flags + patches automatically.
 
 ## Common failure modes
@@ -152,5 +152,5 @@ and applies the right flags + patches automatically.
 - [`sampling-in-cocotb.md`](sampling-in-cocotb.md) — the sample loop after wiring.
 - [`../reference/sv-emission-model.md`](../reference/sv-emission-model.md) — exact module shape `make_coverage` emits.
 - [`../reference/coverage/model.md`](../reference/coverage/model.md) — `CoverageModel` + `CoverageCollector` API.
-- [`../../tests/cocotb/README.md`](../../tests/cocotb/README.md) — pilot conventions; every pilot is a worked example of this how-to.
+- [`../../examples/README.md`](../../examples/README.md) — pilot conventions; every pilot is a worked example of this how-to.
 - [`../glossary.md`](../glossary.md) — term definitions.

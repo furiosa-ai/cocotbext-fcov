@@ -29,14 +29,13 @@ via the `make_coverage` CLI. Designed to plug into cocotb 2.0 testbenches.
 │
 ├── docs/                                Diátaxis-organised docs (see below)
 │
-└── tests/
-    ├── pytest/                          pure-Python unit tests + emit snapshots (71 cases)
-    └── cocotb/                          executable pilots that bind to docs/how-to/
-        ├── _lib/Makefile.common         shared sim glue (Verilator + VCS + Questa)
-        ├── conftest.py                  pytest harness for the pilots (opt-in marker)
-        ├── README.md                    pilot index + run instructions
-        └── {simple_dff, simple_counter, adder, register_sampling,
-              opcode_cross, matrix_multiplier}/   6 pilots
+├── tests/pytest/                       pure-Python unit tests + emit snapshots (87 cases)
+│
+└── examples/                           executable cocotb pilots paired 1:1 to docs/how-to/
+    ├── _lib/Makefile.common            shared sim glue (Verilator + VCS + Questa)
+    ├── README.md                       pilot index + run instructions
+    └── {simple_dff, simple_counter, adder, register_sampling,
+          opcode_cross, matrix_multiplier}/   6 pilots
 ```
 
 ## Where to start
@@ -52,7 +51,7 @@ via the `make_coverage` CLI. Designed to plug into cocotb 2.0 testbenches.
 | Build a multi-coverpoint hierarchy from scratch | `docs/how-to/build-coverage-hierarchy.md` |
 | Wire `cov_model` into a real cocotb test | `docs/how-to/wire-into-testbench.md` |
 | Understand the `coverage.sv` module layout `make_coverage` emits | `docs/reference/sv-emission-model.md` |
-| Run a worked example end-to-end on Verilator / VCS / Questa | `tests/cocotb/<pilot>/README.md` |
+| Run a worked example end-to-end on Verilator / VCS / Questa | `examples/<pilot>/README.md` |
 
 ## Diátaxis layout (`docs/`)
 
@@ -63,10 +62,10 @@ via the `make_coverage` CLI. Designed to plug into cocotb 2.0 testbenches.
 - `docs/glossary.md` — 12 term definitions cross-linked everywhere.
 - `docs/ko/` — Korean mirror (how-to + tutorial + explanations + glossary). Reference stays English by policy (`docs/ko/TRANSLATION_POLICY.md`).
 
-## Tests
+## Tests + examples
 
-- `pytest tests/pytest/` — fast, pure-Python unit + emit snapshot tests. Run by default.
-- `pytest -m cocotb_sim tests/cocotb/` — opt-in pilot suite. Spawns Verilator / VCS / Questa via cocotb 2.0. Slow.
+- `cd tests/pytest && pytest -q` — fast, pure-Python unit + emit snapshot tests (87 cases).
+- `cd examples/<pilot> && make sim` — run a single cocotb pilot end-to-end on Verilator (default) / VCS / Questa. Pilots are demonstrations, not part of the pytest gate.
 
 ## Common commands
 
@@ -78,7 +77,7 @@ pip install -e .
 cd tests/pytest && pytest -q
 
 # One pilot on Verilator (default)
-cd tests/cocotb/simple_dff && make sim
+cd examples/simple_dff && make sim
 
 # Same pilot on VCS / Questa (needs the EDA env sourced)
 source /root-openebs/workspace/stork-dv/stork_dv.env
@@ -94,7 +93,7 @@ make_coverage -f my_coverage_spec.py -sv coverage.sv -md coverage.md
 - **`BASH_ENV` workaround.** Some hosts set `BASH_ENV=/etc/environment`,
   which forces every non-interactive bash subshell to re-source that
   file and reset `PATH`. The cocotb recursive `$(MAKE)` then loses
-  the EDA tool paths. `tests/cocotb/_lib/Makefile.common` unsets
+  the EDA tool paths. `examples/_lib/Makefile.common` unsets
   `BASH_ENV` to neutralise this. If you write your own Makefile,
   inherit `Makefile.common` rather than rolling your own.
 

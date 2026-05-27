@@ -80,7 +80,7 @@ cp_a_exp     = CoverPoint(BinExp(16, base=2))
 cp_a_bitwise = CoverPoint(BinBitwise(4), ref=cp_a_exp)
 ```
 
-> Verified (sim-emit): [`tests/cocotb/adder/coverage_spec.py`](../../tests/cocotb/adder/coverage_spec.py)
+> Verified (sim-emit): [`examples/adder/coverage_spec.py`](../../examples/adder/coverage_spec.py)
 
 ## Step 4 — Combinations: `Cross`
 
@@ -100,7 +100,7 @@ Cross([cp_op, cp_zero],
                     "terms": [(cp_op, int(Op.AND)), (cp_zero, 1)]}])
 ```
 
-> Verified (sim-emit): [`tests/cocotb/opcode_cross/coverage_spec.py`](../../tests/cocotb/opcode_cross/coverage_spec.py)
+> Verified (sim-emit): [`examples/opcode_cross/coverage_spec.py`](../../examples/opcode_cross/coverage_spec.py)
 
 ## Step 5 — Group: `CoverGroup`
 
@@ -118,9 +118,9 @@ class RegfileCoverGroup(CoverGroup):
 Per-instance hit counts are independent — `cg_chan0` and `cg_chan1`
 of the same `CoverGroup` subclass track separate hit buckets.
 
-> Verified (sim-hit): [`tests/cocotb/register_sampling/coverage_spec.py`](../../tests/cocotb/register_sampling/coverage_spec.py) — domain-spread regfile pilot.
+> Verified (sim-hit): [`examples/register_sampling/coverage_spec.py`](../../examples/register_sampling/coverage_spec.py) — domain-spread regfile pilot.
 >
-> Verified (sim-hit): [`tests/cocotb/simple_counter/coverage_spec.py`](../../tests/cocotb/simple_counter/coverage_spec.py) — minimum 3-axis (`BinRange` + `BinBool` + `Cross`) `CoverGroup` template.
+> Verified (sim-hit): [`examples/simple_counter/coverage_spec.py`](../../examples/simple_counter/coverage_spec.py) — minimum 3-axis (`BinRange` + `BinBool` + `Cross`) `CoverGroup` template.
 
 ## Step 6 — Module: `CoverageModel`
 
@@ -138,7 +138,7 @@ cov_model = RegfileCovModel(name="cov_model")
 The module-level `cov_model` instance is what `make_coverage`
 discovers when it walks the file.
 
-> Verified (sim-hit): [`tests/cocotb/register_sampling/coverage_spec.py`](../../tests/cocotb/register_sampling/coverage_spec.py)
+> Verified (sim-hit): [`examples/register_sampling/coverage_spec.py`](../../examples/register_sampling/coverage_spec.py)
 
 ## When to split into several models
 

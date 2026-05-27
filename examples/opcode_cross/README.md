@@ -1,6 +1,6 @@
 # opcode_cross — Cross + ignore_bins + illegal_bins pilot
 
-Paired guide: [`docs/how-to/cross-with-ignore-illegal.md`](../../../docs/how-to/cross-with-ignore-illegal.md)
+Paired guide: [`docs/how-to/cross-with-ignore-illegal.md`](../../docs/how-to/cross-with-ignore-illegal.md)
 
 ## Proves / Does NOT prove
 
@@ -107,4 +107,4 @@ sampling).
 - [`../README.md`](../README.md) — pilot conventions + marker meanings.
 - [`../register_sampling/`](../register_sampling/) — earlier multi-Bin\* pilot.
 - [`../adder/`](../adder/) — `ref=` pattern on a single source wire.
-- [`../../../docs/explanations/architecture.md`](../../../docs/explanations/architecture.md) — coverage class hierarchy.
+- [`../../docs/explanations/architecture.md`](../../docs/explanations/architecture.md) — coverage class hierarchy.

@@ -52,7 +52,7 @@ async def test_basic(dut):
 
 > Verified: [`tests/pytest/test_coverage_model.py`](../../tests/pytest/test_coverage_model.py)
 >
-> Verified (sim-hit): [`tests/cocotb/adder/`](../../tests/cocotb/adder/) — paired pilot exercising `BinUniform` + `BinBitwise` + `BinBool` + `Cross` on a vendored cocotb adder DUT.
+> Verified (sim-hit): [`examples/adder/`](../../examples/adder/) — paired pilot exercising `BinUniform` + `BinBitwise` + `BinBool` + `Cross` on a vendored cocotb adder DUT.
 
 ## Sample per transaction
 

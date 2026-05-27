@@ -1,4 +1,4 @@
-# tests/cocotb/ — docs-backed executable pilots
+# examples/ — docs-backed executable pilots
 
 Each pilot here is a small cocotb testbench paired with a `coverage_spec.py`,
 exercised end-to-end against one or more simulators. The pilots double as
@@ -20,7 +20,7 @@ exercised end-to-end against one or more simulators. The pilots double as
 
 ```bash
 source /root-openebs/workspace/stork-dv/stork_dv.env   # for VCS / Questa
-cd tests/cocotb/<pilot>
+cd examples/<pilot>
 make sim                   # SIM=verilator (open-source, default)
 SIM=vcs    make sim        # functional cov via simv.vdb
 SIM=questa make sim        # functional cov via cov_*.ucdb
@@ -28,16 +28,17 @@ make report                # urg / vcover summary (vcs / questa only)
 make clean
 ```
 
-## Run all pilots via pytest
+## Run all pilots
 
 ```bash
-pytest -m cocotb_sim tests/cocotb/           # SIM=verilator
-SIM=vcs    pytest -m cocotb_sim tests/cocotb/
-SIM=questa pytest -m cocotb_sim tests/cocotb/
+for d in examples/*/; do (cd "$d" && make sim) || exit; done
+SIM=vcs    bash -c 'for d in examples/*/; do (cd "$d" && make sim) || exit; done'
+SIM=questa bash -c 'for d in examples/*/; do (cd "$d" && make sim) || exit; done'
 ```
 
-The `-m cocotb_sim` marker keeps these out of the default fast `pytest
-tests/pytest/` run (which is pure Python and doesn't spawn simulators).
+Pilots live outside the pytest gate — `tests/pytest/` covers the
+pure-Python regression net, and pilots are runnable demonstrations
+of the docs/how-to recipes.
 
 ## Marker meanings (Verified bindings)
 
@@ -54,7 +55,7 @@ flows.
 
 ## Adding a new pilot
 
-1. Make a new directory `tests/cocotb/<pilot_name>/`.
+1. Make a new directory `examples/<pilot_name>/`.
 2. Add a `coverage_spec.py` (one or more `CoverageModel` subclasses with a
    module-level instance for `make_coverage` to discover).
 3. Add the DUT (`<dut>.sv`) and the cocotb test (`tb_<pilot>.py`).

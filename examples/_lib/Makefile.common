@@ -1,4 +1,4 @@
-# Shared cocotb pilot Makefile glue — included by every tests/cocotb/<pilot>/Makefile.
+# Shared cocotb pilot Makefile glue — included by every examples/<pilot>/Makefile.
 #
 # Pilot Makefile contract:
 #   PILOT_DIR             = $(dir $(realpath $(firstword $(MAKEFILE_LIST))))

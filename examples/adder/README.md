@@ -1,6 +1,6 @@
 # adder — multi-axis sampling pilot
 
-Paired guide: [`docs/how-to/sampling-in-cocotb.md`](../../../docs/how-to/sampling-in-cocotb.md)
+Paired guide: [`docs/how-to/sampling-in-cocotb.md`](../../docs/how-to/sampling-in-cocotb.md)
 
 ## Proves / Does NOT prove
 
@@ -58,7 +58,7 @@ After each (A, B) deposit, a 2-ns delay lets the DUT settle before
 
 | File | Role |
 |------|------|
-| `adder.sv` | DUT, vendored cocotb upstream (CC0; see [`NOTICE.md`](../../../NOTICE.md)) |
+| `adder.sv` | DUT, vendored cocotb upstream (CC0; see [`NOTICE.md`](../../NOTICE.md)) |
 | `coverage_spec.py` | `AdderCovModel` → cp_a/b (BinUniform) + cp_a_bitwise (BinBitwise, ref=cp_a) + cp_carry (BinBool) + cx_a_carry (Cross) |
 | `coverage.sv` (committed) | `make_coverage` snapshot |
 | `tb_top.sv` | SV wrapper — `adder` + `cov_model` |
@@ -79,4 +79,4 @@ will walk through.
 - [`../README.md`](../README.md) — pilot conventions + marker meanings.
 - [`../simple_counter/`](../simple_counter/) — earlier pilot, single
   source signal.
-- [`../../../docs/explanations/architecture.md`](../../../docs/explanations/architecture.md) — coverage class hierarchy.
+- [`../../docs/explanations/architecture.md`](../../docs/explanations/architecture.md) — coverage class hierarchy.

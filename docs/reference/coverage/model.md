@@ -112,7 +112,7 @@ The `always` block is gated only at the `COCOTBEXT_FCOV` macro level
 — Verilator users need the `ifndef VERILATOR` patch the pilots'
 Makefiles apply, because Verilator 5.038–5.042 doesn't implement
 covergroup `.sample()`. See
-[`tests/cocotb/_lib/Makefile.common`](../../../tests/cocotb/_lib/Makefile.common).
+[`examples/_lib/Makefile.common`](../../../examples/_lib/Makefile.common).
 
 ### Collector lifecycle (cocotb)
 

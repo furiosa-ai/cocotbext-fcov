@@ -1,6 +1,6 @@
 # simple_counter — multi-coverpoint + Cross pilot
 
-Paired guide: [`docs/how-to/build-coverage-hierarchy.md`](../../../docs/how-to/build-coverage-hierarchy.md)
+Paired guide: [`docs/how-to/build-coverage-hierarchy.md`](../../docs/how-to/build-coverage-hierarchy.md)
 
 ## Proves / Does NOT prove
 
@@ -73,4 +73,4 @@ counter value at least once + the overflow pulse at value=15→0.
 
 - [`../README.md`](../README.md) — pilot conventions + marker meanings.
 - [`../simple_dff/`](../simple_dff/) — single-coverpoint precursor pilot.
-- [`../../../docs/explanations/architecture.md`](../../../docs/explanations/architecture.md) — coverage class hierarchy.
+- [`../../docs/explanations/architecture.md`](../../docs/explanations/architecture.md) — coverage class hierarchy.

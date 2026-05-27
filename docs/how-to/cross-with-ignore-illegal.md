@@ -76,7 +76,7 @@ cx = Cross(
 
 > Verified: [`tests/pytest/test_cross.py`](../../tests/pytest/test_cross.py)
 >
-> Verified (sim-hit): [`tests/cocotb/opcode_cross/`](../../tests/cocotb/opcode_cross/) — paired pilot exercising `Cross` + `ignore_bins` + `illegal_bins` on a 4-op ALU DUT.
+> Verified (sim-hit): [`examples/opcode_cross/`](../../examples/opcode_cross/) — paired pilot exercising `Cross` + `ignore_bins` + `illegal_bins` on a 4-op ALU DUT.
 
 ## Value-spec shapes
 

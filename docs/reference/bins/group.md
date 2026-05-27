@@ -106,7 +106,7 @@ BinGroup([("a", 1), ("a", 2)])
 The `_update_bins` setter asserts the post-dispatch dict has the
 same length as the input list — any naming collision is rejected
 immediately. (This also catches accidental same-min/max auto-names
-on transition bins; the [simple_dff](../../../tests/cocotb/simple_dff/)
+on transition bins; the [simple_dff](../../../examples/simple_dff/)
 pilot's README captures the gotcha.)
 
 ### `type` property — drives SV emission name

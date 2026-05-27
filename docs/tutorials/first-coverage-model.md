@@ -107,7 +107,7 @@ head -3 coverage.md
 
 A single-file Python source-of-truth for one covergroup, with a generated SystemVerilog module ready to be included in the DUT and a Markdown spec doc ready to be reviewed by humans. Edits to `coverage_spec.py` re-flow through `make_coverage` into both outputs.
 
-> Verified (sim-hit): [`tests/cocotb/simple_dff/`](../../tests/cocotb/simple_dff/) — same shape with a vendored cocotb D-FF DUT, ready to run on Verilator (sim-emit) / VCS / Questa (sim-hit).
+> Verified (sim-hit): [`examples/simple_dff/`](../../examples/simple_dff/) — same shape with a vendored cocotb D-FF DUT, ready to run on Verilator (sim-emit) / VCS / Questa (sim-hit).
 
 ## Next steps
 
@@ -120,4 +120,4 @@ A single-file Python source-of-truth for one covergroup, with a generated System
 
 - [reference/coverage/model.md](../reference/coverage/model.md) — `CoverageModel` API.
 - [reference/scripts/make-coverage.md](../reference/scripts/make-coverage.md) — CLI flags.
-- [tests/cocotb/simple_dff/](../../tests/cocotb/simple_dff/) — paired pilot (CC0-vendored DUT).
+- [examples/simple_dff/](../../examples/simple_dff/) — paired pilot (CC0-vendored DUT).

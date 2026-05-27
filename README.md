@@ -21,7 +21,7 @@ Full documentation lives under [`docs/`](docs/) — Diátaxis-organised:
 | Task-oriented recipes | [docs/how-to/](docs/how-to/) |
 | Symbol-level reference | [docs/reference/](docs/reference/) ([by-symbol](docs/reference/by-symbol.md)) |
 | Conceptual orientation | [docs/explanations/](docs/explanations/) |
-| Executable pilots (Verilator + VCS + Questa) | [tests/cocotb/](tests/cocotb/) |
+| Executable pilots (Verilator + VCS + Questa) | [examples/](examples/) |
 | Third-party attribution | [NOTICE.md](NOTICE.md) |
 | 한국어 | [docs/ko/](docs/ko/) |
 

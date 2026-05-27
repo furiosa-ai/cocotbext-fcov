@@ -111,7 +111,7 @@ Two consequences:
    `769533f`). Earlier versions would emit `binsof(None) intersect ...`
    because the cp inside ignore/illegal clauses still pointed at
    the un-named class-level template. See the
-   [opcode_cross](../../../tests/cocotb/opcode_cross/) pilot README
+   [opcode_cross](../../../examples/opcode_cross/) pilot README
    for the full diagnosis.
 
 ### Sample event mechanics
@@ -130,7 +130,7 @@ async `_sample` loop, which:
 Calling `cg.sample()` from cocotb without `await`-ing anything
 afterwards is safe — the async loop drains its own queue.
 
-> Verified (sim-hit): [`tests/cocotb/simple_dff/tb_dff.py`](../../../tests/cocotb/simple_dff/tb_dff.py)
+> Verified (sim-hit): [`examples/simple_dff/tb_dff.py`](../../../examples/simple_dff/tb_dff.py)
 
 ## Options & API
 

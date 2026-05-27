@@ -104,7 +104,7 @@ Pilot 이 사용하는 `> Verified (sim-...)` binding 의 두 단계:
 - **`sim-hit`** — commercial simulator (VCS / Questa / Xcelium) 가
   실제 bin hit count 를 기록.
 
-참조: [`../../tests/cocotb/README.md`](../../tests/cocotb/README.md).
+참조: [`../../examples/README.md`](../../examples/README.md).
 
 ## make_coverage
 
@@ -125,5 +125,5 @@ warning 이 Verilator build 를 막지 않도록 `-Wno-COVERIGN` 으로 실행.
 Bash 환경 변수 — set 되면 모든 비대화형 bash subshell 이 지정된
 파일을 source 한다. 일부 host 는 `BASH_ENV=/etc/environment` 를
 전역 set 해서 `PATH` 가 reset 되고 cocotb 의 재귀 `$(MAKE)` 안에서
-EDA 도구 lookup 이 깨진다. `tests/cocotb/_lib/Makefile.common` 이
+EDA 도구 lookup 이 깨진다. `examples/_lib/Makefile.common` 이
 `BASH_ENV` 를 unset 하여 이를 무효화한다.

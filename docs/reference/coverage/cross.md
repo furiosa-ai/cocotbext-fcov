@@ -102,7 +102,7 @@ ignore_bins=[
 ]
 ```
 
-> Verified (sim-hit): [`tests/cocotb/opcode_cross/coverage_spec.py`](../../../tests/cocotb/opcode_cross/coverage_spec.py)
+> Verified (sim-hit): [`examples/opcode_cross/coverage_spec.py`](../../../examples/opcode_cross/coverage_spec.py)
 
 ### Cross-level `ignore_bins` vs. per-`CoverPoint` `ignore_bins`
 

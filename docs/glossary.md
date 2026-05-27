@@ -109,7 +109,7 @@ The two grades of `> Verified (sim-...)` binding the pilots use:
 - **`sim-hit`** — a commercial simulator (VCS / Questa / Xcelium)
   records actual bin hit counts.
 
-See [`tests/cocotb/README.md`](../tests/cocotb/README.md).
+See [`examples/README.md`](../examples/README.md).
 
 ## make_coverage
 
@@ -132,5 +132,5 @@ A bash environment variable that, when set, causes every
 non-interactive bash subshell to source the named file. Some hosts
 set `BASH_ENV=/etc/environment` globally, which resets `PATH` and
 breaks the EDA tool lookup inside cocotb's recursive `$(MAKE)`.
-`tests/cocotb/_lib/Makefile.common` unsets `BASH_ENV` to neutralise
+`examples/_lib/Makefile.common` unsets `BASH_ENV` to neutralise
 this.

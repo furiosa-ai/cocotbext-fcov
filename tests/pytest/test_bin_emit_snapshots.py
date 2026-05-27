@@ -15,7 +15,7 @@ Coverage of the 19 emit patterns the docs cycle considers:
   BinTransition,
   BinCustom,
   Cross via CoverPoint integration (sanity check covered elsewhere),
-  ignore_bins / illegal_bins (covered by tests/cocotb/opcode_cross at sim level).
+  ignore_bins / illegal_bins (covered by examples/opcode_cross at sim level).
 """
 
 from __future__ import annotations
