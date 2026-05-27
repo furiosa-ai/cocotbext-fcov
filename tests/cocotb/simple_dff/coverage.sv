@@ -12,8 +12,10 @@ module cov_model ();
 
   cg_dff cg_dff_inst = new;
 
+  `ifndef VERILATOR
   always @(cg_dff_sample) begin
     cg_dff_inst.sample();
   end
+  `endif
 endmodule
 `endif

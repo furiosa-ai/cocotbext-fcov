@@ -20,8 +20,10 @@ module cov_model ();
 
   cg_adder cg_adder_inst = new;
 
+  `ifndef VERILATOR
   always @(cg_adder_sample) begin
     cg_adder_inst.sample();
   end
+  `endif
 endmodule
 `endif

@@ -45,8 +45,10 @@ module cov_model ();
 
   cg_matmul cg_matmul_inst = new;
 
+  `ifndef VERILATOR
   always @(cg_matmul_sample) begin
     cg_matmul_inst.sample();
   end
+  `endif
 endmodule
 `endif

@@ -14,8 +14,10 @@ module cov_model ();
 
   cg_counter cg_counter_inst = new;
 
+  `ifndef VERILATOR
   always @(cg_counter_sample) begin
     cg_counter_inst.sample();
   end
+  `endif
 endmodule
 `endif

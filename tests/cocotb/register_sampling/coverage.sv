@@ -25,8 +25,10 @@ module cov_model ();
 
   cg_regfile cg_regfile_inst = new;
 
+  `ifndef VERILATOR
   always @(cg_regfile_sample) begin
     cg_regfile_inst.sample();
   end
+  `endif
 endmodule
 `endif

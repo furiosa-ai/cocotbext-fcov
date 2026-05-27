@@ -40,8 +40,10 @@ module cov_model ();
 
   cg_alu cg_alu_inst = new;
 
+  `ifndef VERILATOR
   always @(cg_alu_sample) begin
     cg_alu_inst.sample();
   end
+  `endif
 endmodule
 `endif
