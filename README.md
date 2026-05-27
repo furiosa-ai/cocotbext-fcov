@@ -1,8 +1,7 @@
 # cocotbext-fcov
 
-Cocotb extension for functional coverage closure. Define `covergroup`s in
-Python, emit SystemVerilog `covergroup` declarations + Markdown coverage
-tables.
+A cocotb extension that allows defining functional coverage in Python and
+automatically generates industry-standard SystemVerilog covergroups.
 
 ## Installation
 
