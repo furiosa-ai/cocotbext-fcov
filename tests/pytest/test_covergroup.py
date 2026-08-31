@@ -19,7 +19,7 @@ def assertion_check(inst: CoverGroup):
         f"wire [4:0] {name}_cp_single_list_2;\n"
         f"wire [4:0] {name}_cp_single_list_3;\n"
         f"wire [5:0] {name}_cp_single_list_4;\n"
-        f"wire [7:0] {name}_cp_uniform;\n"
+        f"wire signed [7:0] {name}_cp_uniform;\n"
         f"wire [3:0] {name}_cp_uniform_list_0;\n"
         f"wire [3:0] {name}_cp_uniform_list_1;\n"
         f"wire [3:0] {name}_cp_uniform_list_2;\n"

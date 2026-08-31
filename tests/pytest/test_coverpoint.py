@@ -72,7 +72,7 @@ def test_cp_dict_list():
     assert cp.num == 3
     assert cp.signal == "cg_python_cp_dict"
     assert cp.width == 5
-    assert cp.sv_wire() == "wire [4:0] cg_python_cp_dict;"
+    assert cp.sv_wire() == "wire signed [4:0] cg_python_cp_dict;"
     assert (
         cp.sv_declare()
         == "cp_dict: coverpoint cg_python_cp_dict {\n"
@@ -125,7 +125,7 @@ def test_cp_uniform_range_single():
     assert cp.num == 4
     assert cp.signal == "cg_predefined_cp_uniform"
     assert cp.width == 8
-    assert cp.sv_wire() == "wire [7:0] cg_predefined_cp_uniform;"
+    assert cp.sv_wire() == "wire signed [7:0] cg_predefined_cp_uniform;"
     assert (
         cp.sv_declare()
         == "cp_uniform: coverpoint cg_predefined_cp_uniform {\n"
@@ -211,7 +211,7 @@ def test_cp_exp_min_max():
     assert cp.num == 10
     assert cp.signal == "cg_predefined_cp_exp"
     assert cp.width == 11
-    assert cp.sv_wire() == "wire [10:0] cg_predefined_cp_exp;"
+    assert cp.sv_wire() == "wire signed [10:0] cg_predefined_cp_exp;"
     assert (
         cp.sv_declare()
         == "cp_exp: coverpoint cg_predefined_cp_exp {\n"
@@ -381,3 +381,40 @@ def test_cp_transition():
         "Ignore Bins": "",
         "Illegal Bins": "",
     }
+
+
+def test_cp_signed_negative_bins():
+    # A coverpoint whose bins include negative values must be emitted as a
+    # signed wire: bin values are interpreted with the type of the coverpoint
+    # expression (IEEE 1800 19.5), so a negative bin on an unsigned wire is
+    # outside the expression's value set and simulators drop it at compile
+    # time (VCS: PSBU/CPBRM warnings, bin silently excluded).
+    cp = CoverPoint(
+        [range(-100, 0), 0, range(1, 100)],
+        width=32,
+        name="cp_signed",
+        group="cg_signed",
+    )
+    assert cp.is_signed
+    assert cp.sv_wire() == "wire signed [31:0] cg_signed_cp_signed;"
+
+    # negative samples reach the wire as two's complement of the declared
+    # width, so the drive does not depend on the simulator interface's own
+    # negative-integer handling
+    class _Handler:
+        value = None
+
+    cp._handler = _Handler()
+    cp.value = -3
+    cp._drive()
+    assert cp._handler.value == 0xFFFFFFFD
+    cp.value = 7
+    cp._drive()
+    assert cp._handler.value == 7
+
+    # an all-non-negative coverpoint is unchanged
+    cp_unsigned = CoverPoint(
+        [0, range(1, 100)], width=32, name="cp_unsigned", group="cg_signed"
+    )
+    assert not cp_unsigned.is_signed
+    assert cp_unsigned.sv_wire() == "wire [31:0] cg_signed_cp_unsigned;"
