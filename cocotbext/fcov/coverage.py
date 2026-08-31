@@ -243,6 +243,13 @@ class CoverPoint:
         if value is None:
             value = self.value
         if value is not None:
+            # A signed coverpoint (any bin below 0) is emitted as a
+            # `wire signed [W-1:0]`, but the wire itself still carries a
+            # plain bit pattern: encode negative samples as two's complement
+            # explicitly so the drive never depends on the simulator
+            # interface's own negative-integer handling.
+            if isinstance(value, int) and value < 0 and self.width:
+                value &= (1 << self.width) - 1
             self._handler.value = value
 
     @property
@@ -324,12 +331,31 @@ class CoverPoint:
     def is_out_of_spec(self):
         return isinstance(self.bins, BinOutOfSpec)
 
+    @property
+    def is_signed(self) -> bool:
+        """True when any bin (regular / ignore / illegal) holds a negative value.
+
+        Bin values are interpreted with the type of the coverpoint expression
+        (IEEE 1800 §19.5), so a negative bin on an unsigned wire is not a
+        legal value of the expression and simulators drop the bin (VCS emits
+        PSBU/CPBRM and excludes it silently).  Such a coverpoint must be
+        emitted as `wire signed` for its own bins to be measurable.
+        """
+        if self.ref:
+            return self.ref.is_signed
+        lowest = self.min
+        return lowest is not None and lowest < 0
+
     def sv_wire(self) -> str:
         if self.ref:
             return None
 
         if not self.is_out_of_spec and self.width > 1:
-            return f"wire [{self.width - 1}:0] {self.signal};"
+            # A coverpoint with negative bins must be signed: on an unsigned
+            # wire the negative bins are outside the expression's value set
+            # and get dropped at compile time (see `is_signed`).
+            signed = "signed " if self.is_signed else ""
+            return f"wire {signed}[{self.width - 1}:0] {self.signal};"
         else:  # self.width == 1:
             return f"wire {self.signal};"
 
