@@ -243,13 +243,6 @@ class CoverPoint:
         if value is None:
             value = self.value
         if value is not None:
-            # A signed coverpoint (any bin below 0) is emitted as a
-            # `wire signed [W-1:0]`, but the wire itself still carries a
-            # plain bit pattern: encode negative samples as two's complement
-            # explicitly so the drive never depends on the simulator
-            # interface's own negative-integer handling.
-            if isinstance(value, int) and value < 0 and self.width:
-                value &= (1 << self.width) - 1
             self._handler.value = value
 
     @property
@@ -304,7 +297,15 @@ class CoverPoint:
         #     f"Error!! Can't find width from bins. Need to specify width of CoverPoint. (bins: {self.bins.width}, ignore"
         #     f" bins: {self.ignore_bins.width}, illegal bins: {self.illegal_bins.width})"
         # )
-        return max(bins_width) if bins_width else None
+        width = max(bins_width) if bins_width else None
+        # The bin widths count the positive bound in unsigned bits. A signed
+        # coverpoint needs one more bit for the sign, otherwise its highest
+        # positive bins are outside the range of the `wire signed`.
+        if self.is_signed:
+            lowest, highest = self.min, self.max
+            signed_width = max((-lowest - 1).bit_length(), max(highest, 0).bit_length()) + 1
+            width = max(width or 0, signed_width)
+        return width
 
     @width.setter
     def width(self, value):

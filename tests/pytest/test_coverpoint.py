@@ -71,8 +71,9 @@ def test_cp_dict_list():
     )
     assert cp.num == 3
     assert cp.signal == "cg_python_cp_dict"
-    assert cp.width == 5
-    assert cp.sv_wire() == "wire signed [4:0] cg_python_cp_dict;"
+    # bins span -11..18: a signed 5-bit wire holds only -16..15
+    assert cp.width == 6
+    assert cp.sv_wire() == "wire signed [5:0] cg_python_cp_dict;"
     assert (
         cp.sv_declare()
         == "cp_dict: coverpoint cg_python_cp_dict {\n"
@@ -85,7 +86,7 @@ def test_cp_dict_list():
     )
     assert cp.markdown() == {
         "Coverpoint": "cp_dict",
-        "Width": "[4:0]",
+        "Width": "[5:0]",
         "Bin Type": "Custom",
         "# of Bins": 3,
         "Bins": "-11, [-10:9], {10, 12, 14, 16, 18}",
@@ -398,16 +399,16 @@ def test_cp_signed_negative_bins():
     assert cp.is_signed
     assert cp.sv_wire() == "wire signed [31:0] cg_signed_cp_signed;"
 
-    # negative samples reach the wire as two's complement of the declared
-    # width, so the drive does not depend on the simulator interface's own
-    # negative-integer handling
+    # negative samples go to the handler unchanged: cocotb converts a
+    # negative int to the bit pattern of the signal and rejects a value
+    # that does not fit
     class _Handler:
         value = None
 
     cp._handler = _Handler()
     cp.value = -3
     cp._drive()
-    assert cp._handler.value == 0xFFFFFFFD
+    assert cp._handler.value == -3
     cp.value = 7
     cp._drive()
     assert cp._handler.value == 7
@@ -418,3 +419,25 @@ def test_cp_signed_negative_bins():
     )
     assert not cp_unsigned.is_signed
     assert cp_unsigned.sv_wire() == "wire [31:0] cg_signed_cp_unsigned;"
+
+
+def test_cp_signed_width():
+    # A signed coverpoint needs one more bit than the unsigned width of its
+    # highest positive bin, otherwise the bin is outside the signed range.
+    cases = [
+        ([range(-3, 6)], 4),  # 5 needs 4 bits signed
+        ([range(-100, 0), range(0, 200)], 9),  # 199 needs 9 bits signed
+        ([range(-8, 8)], 4),  # -8..7 fits 4 bits signed
+        ([-128, 127], 8),
+        ([-129], 9),
+        ([range(-5, -1)], 4),  # all bins negative: -5 needs 4 bits
+    ]
+    for bins, width in cases:
+        cp = CoverPoint(bins, name="cp", group="cg")
+        assert cp.is_signed
+        assert cp.width == width, bins
+        assert -(1 << (width - 1)) <= cp.min and cp.max < (1 << (width - 1))
+
+    # an explicit width is kept
+    cp = CoverPoint([range(-3, 6)], width=32, name="cp", group="cg")
+    assert cp.width == 32
