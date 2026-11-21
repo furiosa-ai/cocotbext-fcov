@@ -441,3 +441,18 @@ def test_cp_signed_width():
     # an explicit width is kept
     cp = CoverPoint([range(-3, 6)], width=32, name="cp", group="cg")
     assert cp.width == 32
+
+
+def test_cp_dec_32bit_upper_half():
+    # An unsized decimal is a 32-bit signed constant: a value of 2**31 or
+    # more must carry the width so that it stays unsigned.
+    cp = CoverPoint(
+        BinDict({"imax": 2147483647, "imin": 2147483648, "neg": range(2147483649, 4294967295), "m1": 4294967295})
+    )
+    assert cp.width == 32
+    assert cp.bins.systemverilog() == (
+        "bins imax = {2147483647};\n"
+        "bins imin = {32'd2147483648};\n"
+        "bins neg = {[32'd2147483649:32'd4294967294]};\n"
+        "bins m1 = {32'd4294967295};"
+    )

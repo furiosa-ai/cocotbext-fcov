@@ -401,6 +401,11 @@ class BinItem:
         if lang == LanguageType.SystemVerilog:
             if self.width > 32:
                 format_prefix = (str(self.width) + "'" + format_int).replace("x", "h")
+            elif format_int == "d" and abs(value) >= 1 << 31:
+                # An unsized decimal is a 32-bit signed constant, so a value of
+                # 2**31 or more becomes negative (VCS Warning-[DCTL]). Give it
+                # the coverpoint width to keep it unsigned.
+                format_prefix = str(self.width) + "'d"
             elif format_int != "d":
                 format_prefix = ("'" + format_int).replace("x", "h")
         elif format_int != "d":
