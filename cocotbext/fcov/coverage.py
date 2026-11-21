@@ -297,7 +297,15 @@ class CoverPoint:
         #     f"Error!! Can't find width from bins. Need to specify width of CoverPoint. (bins: {self.bins.width}, ignore"
         #     f" bins: {self.ignore_bins.width}, illegal bins: {self.illegal_bins.width})"
         # )
-        return max(bins_width) if bins_width else None
+        width = max(bins_width) if bins_width else None
+        # The bin widths count the positive bound in unsigned bits. A signed
+        # coverpoint needs one more bit for the sign, otherwise its highest
+        # positive bins are outside the range of the `wire signed`.
+        if self.is_signed:
+            lowest, highest = self.min, self.max
+            signed_width = max((-lowest - 1).bit_length(), max(highest, 0).bit_length()) + 1
+            width = max(width or 0, signed_width)
+        return width
 
     @width.setter
     def width(self, value):
@@ -324,12 +332,31 @@ class CoverPoint:
     def is_out_of_spec(self):
         return isinstance(self.bins, BinOutOfSpec)
 
+    @property
+    def is_signed(self) -> bool:
+        """True when any bin (regular / ignore / illegal) holds a negative value.
+
+        Bin values are interpreted with the type of the coverpoint expression
+        (IEEE 1800 §19.5), so a negative bin on an unsigned wire is not a
+        legal value of the expression and simulators drop the bin (VCS emits
+        PSBU/CPBRM and excludes it silently).  Such a coverpoint must be
+        emitted as `wire signed` for its own bins to be measurable.
+        """
+        if self.ref:
+            return self.ref.is_signed
+        lowest = self.min
+        return lowest is not None and lowest < 0
+
     def sv_wire(self) -> str:
         if self.ref:
             return None
 
         if not self.is_out_of_spec and self.width > 1:
-            return f"wire [{self.width - 1}:0] {self.signal};"
+            # A coverpoint with negative bins must be signed: on an unsigned
+            # wire the negative bins are outside the expression's value set
+            # and get dropped at compile time (see `is_signed`).
+            signed = "signed " if self.is_signed else ""
+            return f"wire {signed}[{self.width - 1}:0] {self.signal};"
         else:  # self.width == 1:
             return f"wire {self.signal};"
 
